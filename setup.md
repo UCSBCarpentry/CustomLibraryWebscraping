@@ -1,9 +1,8 @@
 ---
 layout: page
 title: Setup
-root: .
+permalink: /setup/
 ---
-
 In order to follow this lesson, you will need to make sure the following software is installed on your computer.
 
 ## Part one: Manually scrape data using browser extensions
@@ -40,7 +39,7 @@ you can easilly install Scrapy by doing the following:
 1. Open a new shell (e.g. Terminal on Mac, or the Anaconda command-line tool on Windows)
 2. Type the following:
 
-> conda install -c conda-forge scrapy
+> conda install scrapy
 >
 {: .source}
 
