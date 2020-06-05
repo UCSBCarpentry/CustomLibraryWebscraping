@@ -1,0 +1,796 @@
+I"Q�<p>Before we delve into web scraping proper, we will first spend some time introducing
+some of the techniques that are required to indicate exactly what should be
+extracted from the web pages we aim to scrape.</p>
+
+<p>The material in this section was adapted from the <a href="https://github.com/code4libtoronto/2016-07-28-librarycarpentrylessons/blob/master/xpath-xquery/lesson.md">XPath and XQuery Tutorial</a>
+written by <a href="https://github.com/kimpham54">Kim Pham</a> (<a href="https://twitter.com/tolloid">@tolloid</a>)
+for the July 2016 <a href="https://code4libtoronto.github.io/2016-07-28-librarycarpentry/">Library Carpentry workshop</a> in Toronto.</p>
+
+<h1 id="introduction">Introduction</h1>
+<p>XPath (which stands for XML Path Language) is an <em>expression language</em> used to specify parts of an XML document.
+XPath is rarely used on its own, rather it is used within software and languages that are aimed at manipulating
+XML documents, such as XSLT, XQuery or the web scraping tools that will be introduced later in this lesson.
+XPath can also be used in documents with a structure that is similar to XML, like HTML.</p>
+
+<h2 id="markup-languages">Markup Languages</h2>
+<p>XML and HTML are <em>markup languages</em>. This means that they use a set of tags or rules to organise and provide
+information about the data they contain. This structure helps to automate processing, editing, formatting,
+displaying, printing, etc. that information.</p>
+
+<p>XML documents stores data in plain text format. This provides a software- and hardware-independent way of storing,
+transporting, and sharing data. XML format is an open format, meant to be software agnostic. You can
+open an XML document in any text editor and the data it contains will be shown as it is meant to be represented.
+This allows for exchange between incompatible systems and easier conversion of data.</p>
+
+<blockquote class="callout">
+  <h2 id="xml-and-html">XML and HTML</h2>
+
+  <p>Note that HTML and XML have a very similar structure, which is why XPath can be used almost interchangeably to
+navigate both HTML and XML documents. In fact, starting with HTML5, HTML documents are fully-formed XML documents.
+In a sense, HTML is like a particular dialect of XML.</p>
+
+</blockquote>
+
+<p>XML document follows basic syntax rules:</p>
+
+<ul>
+  <li>An XML document is structured using <em>nodes</em>, which include element nodes, attribute nodes and text nodes</li>
+  <li>XML element nodes must have an opening and closing tag, e.g. <code class="highlighter-rouge">&lt;catfood&gt;</code> opening tag and <code class="highlighter-rouge">&lt;/catfood&gt;</code> closing tag</li>
+  <li>XML tags are case sensitive, e.g. <code class="highlighter-rouge">&lt;catfood&gt;</code> does not equal <code class="highlighter-rouge">&lt;catFood&gt;</code></li>
+  <li>XML elements must be properly nested:</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;catfood&gt;
+  &lt;manufacturer&gt;Purina&lt;/manufacturer&gt;
+    &lt;address&gt; 12 Cat Way, Boise, Idaho, 21341&lt;/address&gt;
+  &lt;date&gt;2019-10-01&lt;/date&gt;
+&lt;/catfood&gt;
+</code></pre></div></div>
+<ul>
+  <li>Text nodes (data) are contained inside the opening and closing tags</li>
+  <li>XML attribute nodes contain values that must be quoted, e.g.
+<code class="highlighter-rouge">&lt;catfood type="basic"&gt;&lt;/catfood&gt;</code></li>
+</ul>
+
+<h1 id="xpath-expressions">XPath Expressions</h1>
+
+<p>XPath is written using expressions. Expressions consist of values, e.g., 368, and operators, e.g., +, that will return 
+a single value. <code class="highlighter-rouge">368 + 275</code> is an example of an expression. It will return the value <code class="highlighter-rouge">643</code>. In programming terminology, this is called evaluating, which simply means reducing down to a single value. A single value with no operators, e.g. <code class="highlighter-rouge">35</code>, can also be called an expression, though it will evaluate only to its existing value, e.g. 35.</p>
+
+<p>Using XPath is similar to using advanced search in a library catalogue, where the structured nature of bibliographic information allows us to specify which metadata fields to query. For example, if we want to find books <em>about</em> Shakespeare but not works <em>by</em> him, we can limit our search function to the <code class="highlighter-rouge">subject</code> field only.</p>
+
+<p>When we use XPath, we do not need to know in advance what the data we want looks like (as we would with regular expressions, where we need to know the pattern of the data). Since XML documents are structured into fields called nodes, XPath makes use of that structure to navigate through the nodes to select the data we want. We just need to know in which nodes within an XML file the data we want to find resides. When XPath expressions are evaluated on XML documents, they return objects containing the nodes that you specify.</p>
+
+<h2 id="xpath-always-assumes-structured-data">XPath always assumes <em>structured</em> data.</h2>
+
+<p>Now let’s start using XPath.</p>
+
+<h2 id="navigating-through-the-html-node-tree-using-xpath">Navigating through the HTML node tree using XPath</h2>
+
+<p>A popular way to represent the structure of an XML or HTML document is the <em>node tree</em>:</p>
+
+<p><img src="http://www.w3schools.com/js/pic_htmltree.gif" alt="HTML Node Tree" /></p>
+
+<p>In an HTML document, everything is a node:</p>
+
+<ul>
+  <li>The entire document is a document node</li>
+  <li>Every HTML element is an element node</li>
+  <li>The text inside HTML elements are text nodes</li>
+</ul>
+
+<p>The nodes in such a tree have a hierarchical relationship to each other. We use the terms <em>parent</em>, <em>child</em> and
+<em>sibling</em> to describe these relationships:</p>
+
+<ul>
+  <li>In a node tree, the top node is called the <em>root</em> (or <em>root node</em>)</li>
+  <li>Every node has exactly one <em>parent</em>, except the root (which has no parent)</li>
+  <li>A node can have zero, one or several <em>children</em></li>
+  <li><em>Siblings</em> are nodes with the same parent</li>
+  <li>The sequence of connections from node to node is called a <em>path</em></li>
+</ul>
+
+<p><img src="http://www.w3schools.com/js/pic_navigate.gif" alt="Node relationships" /></p>
+
+<p>Paths in XPath are defined using slashes (<code class="highlighter-rouge">/</code>) to separate the steps in a node connection sequence, much like
+URLs or Unix directories.</p>
+
+<p>In XPath, all expressions are evaluated based on a <em>context node</em>. The context node is the node in which a path
+starts from. The default context is the root node, indicated by a single slash (/), as in the example above.</p>
+
+<p>The most useful path expressions are listed below:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Expression</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">nodename</code></td>
+      <td style="text-align: left">Select all nodes with the name “nodename”</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">/</code></td>
+      <td style="text-align: left">A beginning single slash indicates a select from the root node, subsequent slashes indicate selecting a child node from current node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">//</code></td>
+      <td style="text-align: left">Select direct and indirect child nodes in the document from the current node - this gives us the ability to “skip levels”</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">.</code></td>
+      <td style="text-align: left">Select the current context node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">..</code></td>
+      <td style="text-align: left">Select the parent of the context node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">@</code></td>
+      <td style="text-align: left">Select attributes of the context node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[@attribute = 'value']</code></td>
+      <td style="text-align: left">Select nodes with a particular attribute value</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">text()</code></td>
+      <td style="text-align: left">Select the text content of a node</td>
+    </tr>
+    <tr>
+      <td>|</td>
+      <td style="text-align: left">Pipe chains expressions and brings back results from either expression, think of a set union</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="navigating-through-a-webpage-with-xpath-using-a-browser-console">Navigating through a webpage with XPath using a browser console</h2>
+
+<p>We will use the HTML code that describes this very page you are reading as an example. By default, a web browser
+interprets the HTML code to determine what markup to apply to the various elements of a document, and the code is
+invisible. To make the underlying code visible, all browsers have a function to display the raw HTML content of
+a web page.</p>
+
+<blockquote class="challenge">
+  <h2 id="display-the-source-of-this-page">Display the source of this page</h2>
+  <p>Using your favourite browser, display the HTML source code of this page.</p>
+
+  <p>Tip: in most browsers, all you have to do is do a right-click anywhere on the page and select the “View Page Source”
+option (“Show Page Source” in Safari).</p>
+
+  <p>Another tab should open with the raw HTML that makes this page. See if you can locate its various elements, and
+this challenge box in particular.</p>
+
+</blockquote>
+
+<blockquote class="callout">
+  <h2 id="using-the-safari-browser">Using the Safari browser</h2>
+
+  <p>If you are using Safari, you must first turn on the “Develop” menu in order to view the page source, and use the
+functions that we will use later in this section. To do so, navigate to Safari &gt; Preferences and in the Advanced tab
+select the “Show Develop in menu bar” option. Note: In recent versions of Safari you must first turn on the “Develop” 
+menu (in Preferences) and then navigate to <code class="highlighter-rouge">Develop &gt; Show Javascript Console</code> and then click on the “Console” tab.</p>
+
+</blockquote>
+
+<p>The HTML structure of the page you are currently reading looks something like this (most text and elements have
+been removed for clarity):</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    (...)
+    <span class="nt">&lt;title&gt;</span>Selecting content on a web page with XPath<span class="nt">&lt;/title&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+	 (...)
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>We can see from the source code that the title of this page is in a <code class="highlighter-rouge">title</code> element that is itself inside the
+<code class="highlighter-rouge">head</code> element, which is itself inside an <code class="highlighter-rouge">html</code> element that contains the entire content of the page.</p>
+
+<p>Say we wanted to tell a web scraper to look for the title of this page, we would use this information to indicate the
+<em>path</em> the scraper would need to follow at it navigates through the HTML content of the page to reach the <code class="highlighter-rouge">title</code>
+element. XPath allows us to do that.</p>
+
+<p>We can run XPath queries directly from within all major modern browsers, by enabling the built-in JavaScript console.</p>
+
+<blockquote class="callout">
+  <h2 id="display-the-console-in-your-browser">Display the console in your browser</h2>
+
+  <ul>
+    <li>In Firefox, use to the <em>Tools &gt; Web Developer &gt; Web Console</em> menu item.</li>
+    <li>In Chrome, use the <em>View &gt; Developer &gt; JavaScript Console</em> menu item.</li>
+    <li>In Safari, use the <em>Develop &gt; Show Error Console</em> menu item. If your Safari browser doesn’t have a Develop menu,
+you must first enable this option in the Preferences, see above.</li>
+  </ul>
+
+</blockquote>
+
+<p>Here is how the console looks like in the Firefox browser:</p>
+
+<p><img src="../fig/firefox-console.png" alt="JavaScript console in Firefox" /></p>
+
+<p>For now, don’t worry too much about error messages if you see any in the console when you open it. The console
+should display a <em>prompt</em> with a <code class="highlighter-rouge">&gt; </code> character (<code class="highlighter-rouge">&gt;&gt;</code> in Firefox) inviting you to type commands.</p>
+
+<p>The syntax to run an XPath query within the JavaScript console is <code class="highlighter-rouge">$x("XPATH_QUERY")</code>, for example:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("/html/head/title/text()")
+</code></pre></div></div>
+
+<p>This should return something similar to</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [ #text "Selecting content on a web page with XPath" ]
+</code></pre></div></div>
+
+<p>The output can vary slightly based on the browser you are using. For example in Chrome, you have to “open” the
+return object by clicking on it in order to view its contents.</p>
+
+<p>Let’s look closer at the XPath query used in the example above: <code class="highlighter-rouge">/html/head/title/text()</code>. The first <code class="highlighter-rouge">/</code> indicates
+the <em>root</em> of the document. With that query, we told the browser to</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">/</code></td>
+      <td>Start at the root of the document…</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">html/</code></td>
+      <td>… navigate to the <code class="highlighter-rouge">html</code> node …</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">head/</code></td>
+      <td>… then to the <code class="highlighter-rouge">head</code> node  that’s inside it…</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">title/</code></td>
+      <td>… then to the <code class="highlighter-rouge">title</code> node that’s inside it…</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">text()</code></td>
+      <td>and select the text node contained in that element</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Using this syntax, XPath thus allows us to determine the exact <em>path</em> to a node.</p>
+
+<blockquote class="challenge">
+  <h2 id="select-the-introduction-title">Select the “Introduction” title</h2>
+  <p>Write an XPath query that selects the “Introduction” title above and try running it in the console.</p>
+
+  <p>Tip: if a query returns multiple elements, the syntax <code class="highlighter-rouge">element[1]</code> can be used. Note that
+XPath uses one-based indexing, therefore the first element has index 1, the second has index 2 etc.</p>
+
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("/html/body/div/article/h1[1]")
+</code></pre></div>    </div>
+
+    <p>should produce something similar to</p>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [ &lt;h1#introduction&gt; ]
+</code></pre></div>    </div>
+
+  </blockquote>
+</blockquote>
+
+<p>Before we look into other
+ways to reach a specific HTML node using XPath, let’s start by looking closer at how nodes are arranged
+within a document and what their relationships with each others are.</p>
+
+<p>For example, to select all the <code class="highlighter-rouge">blockquote</code> nodes of this page, we can write</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("/html/body/div/article/blockquote")
+</code></pre></div></div>
+
+<p>This produces an array of objects:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [ &lt;blockquote.objectives&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.keypoints&gt; ]
+</code></pre></div></div>
+
+<p>This selects all the <code class="highlighter-rouge">blockquote</code> elements that are under <code class="highlighter-rouge">html/body/div</code>. If we want instead to select <em>all</em>
+<code class="highlighter-rouge">blockquote</code> elements in this document, we can use the <code class="highlighter-rouge">//</code> syntax instead:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//blockquote")
+</code></pre></div></div>
+
+<p>This produces a longer array of objects:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [ &lt;blockquote.objectives&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.callout&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.solution&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.solution&gt;, 3 more… ]
+</code></pre></div></div>
+
+<blockquote class="challenge">
+  <h2 id="why-is-the-second-array-longer">Why is the second array longer?</h2>
+  <p>If you look closely into the array that is returned by the <code class="highlighter-rouge">$x("//blockquote")</code> query above,
+you should see that it contains objects like <code class="highlighter-rouge">&lt;blockquote.solution&gt;</code> that were not
+included in the results of the first query. Why is this so?</p>
+
+  <p>Tip: Look at the source code and see how the challenges and solutions elements are
+organised.</p>
+
+</blockquote>
+
+<p>We can use the <code class="highlighter-rouge">class</code> attribute of certain elements to filter down results. For example, looking
+at the list of <code class="highlighter-rouge">blockquote</code> elements returned by the previous query, and by looking at this page’s
+source, we can see that the blockquote elements on this page are of different classes
+(challenge, solution, callout, etc.).</p>
+
+<p>To refine the above query to get all the <code class="highlighter-rouge">blockquote</code> elements of the <code class="highlighter-rouge">challenge</code> class, we can type</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//blockquote[@class='challenge']")
+</code></pre></div></div>
+
+<p>which returns</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Array [ &lt;blockquote.challenge&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.challenge&gt;, &lt;blockquote.challenge&gt; ]
+</code></pre></div></div>
+
+<blockquote class="challenge">
+  <h2 id="select-the-introduction-title-by-id">Select the “Introduction” title by ID</h2>
+  <p>In a previous challenge, we were able to select the “Introduction” title because we knew it was
+the first <code class="highlighter-rouge">h1</code> element on the page. But what if we didn’t know how many such elements were on the
+page. In other words, is there a different attribute that allows us to uniquely identify that title
+element?</p>
+
+  <p>Using the path expressions introduced above, rewrite your XPath query to select
+the “Introduction” title without using the <code class="highlighter-rouge">[1]</code> index notation.</p>
+
+  <p>Tips:</p>
+
+  <ul>
+    <li>Look at the source of the page or use the “Inspect element” function of your browser to see what
+other information would enable us to uniquely identify that element.</li>
+    <li>The syntax for selecting an element like <code class="highlighter-rouge">&lt;div id="mytarget"&gt;</code> is <code class="highlighter-rouge">div[@id = 'mytarget']</code>.</li>
+  </ul>
+
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("/html/body/div/h1[@id='introduction']")
+</code></pre></div>    </div>
+
+    <p>should produce something similar to</p>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [ &lt;h1#introduction&gt; ]
+</code></pre></div>    </div>
+
+  </blockquote>
+</blockquote>
+
+<blockquote class="challenge">
+  <h2 id="select-this-challenge-box">Select this challenge box</h2>
+  <p>Using an XPath query in the JavaScript console of your browser, select the element that contains the text
+you are currently reading on this page.</p>
+
+  <p>Tips:</p>
+
+  <ul>
+    <li>In principle, <code class="highlighter-rouge">id</code> attributes in HTML are unique on a page. This means that if you know the <code class="highlighter-rouge">id</code>
+of the element you are looking for, you should be able to construct an XPath that looks for this value
+without having to worry about where in the node tree the target element is located.</li>
+    <li>The syntax for selecting an element like <code class="highlighter-rouge">&lt;div id="mytarget"&gt;</code> is <code class="highlighter-rouge">div[@id = 'mytarget']</code>.</li>
+    <li>Remember that XPath queries are relative to a context node, and by default that node is the root node.</li>
+    <li>Use the <code class="highlighter-rouge">//</code> syntax to select for elements regardless of where they are in the tree.</li>
+    <li>The syntax to select the parent element relative to a context node is <code class="highlighter-rouge">..</code></li>
+    <li>The <code class="highlighter-rouge">$x(...)</code> JavaScript syntax will always return an array of nodes, regardless of the number of
+nodes returned by the query. Contrary to XPath, JavaScript uses <em>zero based indexing</em>, so the syntax to get
+the first element of that array is therefore <code class="highlighter-rouge">$x(...)[0]</code>.</li>
+  </ul>
+
+  <p>Make sure you select this entire challenge box. If the result of your query displays only the title of
+this box, have a second look at the HTML structure of the document and try to figure out how to “expand”
+your selection to the entire challenge box.</p>
+
+  <blockquote class="solution">
+    <h2 id="solution-2">Solution</h2>
+    <p>Let’s have a look at the HTML code of this page, around this challenge box (using the “View Source” option)
+in our browser). The code looks something like this:</p>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    (...)
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+	<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"container"</span><span class="nt">&gt;</span>
+	(...)
+	  <span class="nt">&lt;blockquote</span> <span class="na">class=</span><span class="s">"challenge"</span><span class="nt">&gt;</span>
+	    <span class="nt">&lt;h2</span> <span class="na">id=</span><span class="s">"select-this-challenge-box"</span><span class="nt">&gt;</span>Select this challenge box<span class="nt">&lt;/h2&gt;</span>
+	    <span class="nt">&lt;p&gt;</span>Using an XPath query in the JavaScript console of your browser...<span class="nt">&lt;/p&gt;</span>
+	    (...)
+	  <span class="nt">&lt;/blockquote&gt;</span>
+	(...)
+	<span class="nt">&lt;/div&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div>    </div>
+
+    <p>We know that the <code class="highlighter-rouge">id</code> attribute should be unique, so we can use this to select the <code class="highlighter-rouge">h2</code> element inside
+the challenge box:</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//h2[@id = 'select-this-challenge-box']/..")[0]
+</code></pre></div>    </div>
+
+    <p>This should return something like</p>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- &lt;blockquote class="challenge"&gt;
+</code></pre></div>    </div>
+
+    <p>Let’s walk through that syntax:</p>
+
+    <table>
+      <tbody>
+        <tr>
+          <td><code class="highlighter-rouge">$x("</code></td>
+          <td>This function tells the browser we want it to execute an XPath query.</td>
+        </tr>
+        <tr>
+          <td><code class="highlighter-rouge">//</code></td>
+          <td>Look anywhere in the document…</td>
+        </tr>
+        <tr>
+          <td><code class="highlighter-rouge">h2</code></td>
+          <td>… for an h2 element …</td>
+        </tr>
+        <tr>
+          <td><code class="highlighter-rouge">[@id = 'select-this-challenge-box']</code></td>
+          <td>… that has an <code class="highlighter-rouge">id</code> attribute set to <code class="highlighter-rouge">select-this-challenge-box</code>…</td>
+        </tr>
+        <tr>
+          <td><code class="highlighter-rouge">..</code></td>
+          <td>and select the parent node of that h2 element</td>
+        </tr>
+        <tr>
+          <td><code class="highlighter-rouge">")"</code></td>
+          <td>This is the end of the XPath query.</td>
+        </tr>
+        <tr>
+          <td><code class="highlighter-rouge">[0]</code></td>
+          <td>Select the first element of the resulting array (since <code class="highlighter-rouge">$x()</code> returns an array of nodes and we are only interested in the first one).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>By hovering on the object returned by your XPath query in the console, your browser should helpfully highlight
+that object in the document, enabling you to make sure you got the right one:</p>
+
+    <p><img src="../fig/firefox-hover.png" alt="Hovering over a resulting node in Firefox" /></p>
+  </blockquote>
+</blockquote>
+
+<h1 id="advanced-xpath-syntax">Advanced XPath syntax</h1>
+
+<p>FIXME: All the content below is from the original XPath lesson. Adapt content to use current example.</p>
+
+<h2 id="operators">Operators</h2>
+
+<p>Operators are used to compare nodes. There are mathematical operators, boolean operators. Operators can give you boolean (true/false values) as a result. Here are some useful ones:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Operator</th>
+      <th style="text-align: left">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">=</code></td>
+      <td style="text-align: left">Equivalent comparison, can be used for numeric or text values</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">!=</code></td>
+      <td style="text-align: left">Is not equivalent comparison</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&gt;, &gt;=</code></td>
+      <td style="text-align: left">Greater than, greater than or equal to</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;, &lt;=</code></td>
+      <td style="text-align: left">Less than, less than or equal to</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">or</code></td>
+      <td style="text-align: left">Boolean or</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">and</code></td>
+      <td style="text-align: left">Boolean and</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">not</code></td>
+      <td style="text-align: left">Boolean not</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="examples">Examples</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Path Expression</th>
+      <th style="text-align: left">Expression Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>html/body/div/h3/@id=’exercises-2’</td>
+      <td style="text-align: left">Does exercise 2 exist?</td>
+    </tr>
+    <tr>
+      <td>html/body/div/h3/@id!=’exercises-4’</td>
+      <td style="text-align: left">Does exercise 4 not exist?</td>
+    </tr>
+    <tr>
+      <td>//h1/@id=’references’ or @id=’introduction’</td>
+      <td style="text-align: left">Is there an h1 references or introduction?</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="predicates">Predicates</h2>
+
+<p>Predicates are used to find a specific node or a node that contains a specific value.</p>
+
+<p>Predicates are always embedded in square brackets, and are meant to provide additional filtering information to bring back nodes. You can filter on a node by using operators or functions.</p>
+
+<h3 id="examples-1">Examples</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Operator</th>
+      <th style="text-align: left">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">[1]</code></td>
+      <td style="text-align: left">Select the first node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[last()]</code></td>
+      <td style="text-align: left">Select the last node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[last()-1]</code></td>
+      <td style="text-align: left">Select the last but one node (also known as the second last node)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[position()&lt;3]</code></td>
+      <td style="text-align: left">Select the first two nodes, note the first position starts at 1, not =</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[@lang]</code></td>
+      <td style="text-align: left">Select nodes that have attribute ‘lang’</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[@lang='en']</code></td>
+      <td style="text-align: left">Select all the nodes that have a “attribute” attribute with a value of “en”</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[price&gt;15.00]</code></td>
+      <td style="text-align: left">Select all nodes that have a price node with a value greater than 15.00</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Path Expression</th>
+      <th style="text-align: left">Expression Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>//h1[2]</td>
+      <td style="text-align: left">Select 2nd h1</td>
+    </tr>
+    <tr>
+      <td>//h1[@id=’references’ or @id=’introduction’]</td>
+      <td style="text-align: left">Select h1 references or introduction</td>
+    </tr>
+  </tbody>
+</table>
+
+<!--
+Note: '!=' != 'not', for instance in this snippet
+
+```xml
+<book id='bk101'></book>
+<book></book>
+<book type='paperback'></book>
+<book id='bk102'></book>
+<book id='bk103'></book>
+```
+
+The ```[@id != 'bk101']``` will bring back
+
+```xml
+<book id='bk102'></book>
+<book id='bk103'></book>
+```
+
+While ```[not(@id='bk101')]``` will bring back
+
+```xml
+<book></book>
+<book type='paperback'></book>
+<book id='bk102'></book>
+<book id='bk103'></book>
+```
+
+This is because != indicates the existence of an @id, whie the not() expression expresses to bring back everything except @id='bk101'
+-->
+
+<h2 id="wildcards">Wildcards</h2>
+
+<p>XPath wildcards can be used to select unknown XML nodes.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Wildcard</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">*</code></td>
+      <td style="text-align: left">Matches any element node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">@*</code></td>
+      <td style="text-align: left">Matches any attribute node</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">node()</code></td>
+      <td style="text-align: left">Matches any node of any kind</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="examples-3">Examples</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Path Expression</th>
+      <th style="text-align: left">Result</th>
+      <th>//*[@id=”examples-2”]</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">//*[@class='solution']</code></td>
+      <td style="text-align: left">Select all elements with class attribute ‘solution’</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="in-text-search">In-text search</h2>
+
+<p>XPath can do in-text searching using functions and also supports regex with its matches() function. Note: in-text searching is case-sensitive!</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Path Expression</th>
+      <th style="text-align: left">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">//author[contains(.,"Matt")]</code></td>
+      <td style="text-align: left">Matches on all author nodes, in current node contains Matt (case-sensitive)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">//author[starts-with(.,"G")]</code></td>
+      <td style="text-align: left">Matches on all author nodes, in current node starts with G (case-sensitive)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">//author[ends-with(.,"w")]</code></td>
+      <td style="text-align: left">Matches on all author nodes, in current node ends with w (case-sensitive)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">//author[matches(.,"Matt.*")]</code></td>
+      <td style="text-align: left">regular expressions match 2.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<!--
+### Exercises
+
+| Expression   | Result |
+|-----------------|:-------------|
+|||
+-->
+
+<h2 id="complete-syntax-xpath-axes">Complete syntax: XPath Axes</h2>
+
+<p>XPath Axes fuller syntax of how to use XPath. Provides all of the different ways to specify the path by describing more fully the relationships between nodes and their connections. The XPath specification describes 13 different axes:</p>
+
+<ul>
+  <li>self ‐‐ the context node itself</li>
+  <li>child ‐‐ the children of the context node</li>
+  <li>descendant ‐‐ all descendants (children+)</li>
+  <li>parent ‐‐ the parent (empty if at the root)</li>
+  <li>ancestor ‐‐ all ancestors from the parent to the root</li>
+  <li>descendant‐or‐self ‐‐ the union of descendant and self • ancestor‐or‐self ‐‐ the union of ancestor and self</li>
+  <li>following‐sibling ‐‐ siblings to the right</li>
+  <li>preceding‐sibling ‐‐ siblings to the left</li>
+  <li>following ‐‐ all following nodes in the document, excluding descendants</li>
+  <li>preceding ‐‐ all preceding nodes in the document, excluding ancestors • attribute ‐‐ the attributes of the context node</li>
+</ul>
+
+<p><a href="../fig/xpath-axes.jpg"><img src="https://kimpham54.github.io/library-webscraping/fig/xpath-axes.jpg" alt="XPath Axes Image Credit: SAMS Teach Yourself XSLT in 21 Days" /></a></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Path Expression</th>
+      <th style="text-align: left">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">/html/body/div/h1[@id='introduction']/following-sibling::h1</code></td>
+      <td style="text-align: left">Select all h1 following siblings of the h1 introduction</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">/html/body/div/h1[@id='introduction']/following-sibling::*</code></td>
+      <td style="text-align: left">Select all h1 following siblings</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">//attribute::id</code></td>
+      <td style="text-align: left">Select all id attribute nodes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Oftentimes, the elements we are looking for on a page have no ID attribute or
+other uniquely identifying features, so the next best thing is to aim for
+neighboring elements that we can identify more easily and then use node
+relationships to get from those easy to identify elements to the target elements.</p>
+
+<p>For example, the node tree image above has no uniquely identifying feature like an ID attribute.
+However, it is just below the section header “Navigating through the HTML node tree using XPath”.
+Looking at the source code of the page, we see that that header is a <code class="highlighter-rouge">h2</code> element with the id
+<code class="highlighter-rouge">navigating-through-the-html-node-tree-using-xpath</code>.</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//h2[@id='navigating-through-the-html-node-tree-using-xpath']/following-sibling::p[2]/img")
+</code></pre></div></div>
+
+<h1 id="additions">Additions</h1>
+
+<p>FIXME: add more XPath functions such as concat() and normalize-space().
+FIXME: mention <a href="https://addons.mozilla.org/en-US/firefox/addon/xpath-checker/">XPath Checker for Firefox</a>
+FIXME: Firefox sometime cleans up the HTML of a page before displaying it, meaning that the DOM tree
+we can access through the console might not reflect the actual source code. <code class="highlighter-rouge">&lt;tbody&gt;</code> elements are
+typically not reliable.
+The <a href="https://doc.scrapy.org/en/latest/topics/firefox.html#caveats-with-inspecting-the-live-browser-dom">Scrapy documentation</a>
+has more on the topic.</p>
+
+<h1 id="references">References</h1>
+
+<ul>
+  <li><a href="http://www.w3schools.com/js/js_htmldom_navigation.asp">W3Schools: JavaScript HTML DOM Navigation</a></li>
+  <li><a href="/library-webscraping/extras/xpath-cheatsheet.md.pdf">XPath Cheatsheet</a></li>
+</ul>
+:ET

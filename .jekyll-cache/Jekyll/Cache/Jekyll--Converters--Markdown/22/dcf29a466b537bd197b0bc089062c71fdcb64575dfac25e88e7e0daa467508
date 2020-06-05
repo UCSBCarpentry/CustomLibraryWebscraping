@@ -1,0 +1,238 @@
+I"�.<h1 id="using-the-scraper-chrome-extension">Using the Scraper Chrome extension</h1>
+
+<p>Now we are finally ready to do some web scraping. Let’s go back to the list of
+<a href="https://www.parliament.uk/mps-lords-and-offices/mps/">UK House of Commons members</a>.</p>
+
+<p>We are interested in downloading this list to a spreadsheet, with columns for names and
+constituencies. Do do so, we will use the Scraper extension in the Chrome browser
+(refer to the <a href="setup/">Setup</a> section for help installing these tools).</p>
+
+<h2 id="scrape-similar">Scrape similar</h2>
+
+<p>With the extension installed, we can select the first row of the House of Commons members
+list, do a right click and choose “Scrape similar” from the contextual menu:</p>
+
+<p><img src="../fig/scraper-contextmenu.png" alt="Screenshot of the Scraper contextual menu" /></p>
+
+<p>Alternatively, the “Scrape similar” option can also be accessed from the Scraper extension
+icon:</p>
+
+<p><img src="../fig/scraper-menu.png" alt="Screenshot of the Scraper menu" /></p>
+
+<p>Either operation will bring up the Scraper window:</p>
+
+<p><img src="../fig/scraper-ukparl-01.png" alt="Screenshot of the Scraper main window" /></p>
+
+<p>We recognize that Scraper has generated XPath queries that corresponds to the data we had
+selected upon calling it. The Selector (highlighted in red in the above screenshot)
+ has been set to <code class="highlighter-rouge">//tbody/tr[td]</code> which selects
+all the rows of the table, delimiting the data we want to extract.</p>
+
+<p>In fact, we can try out that query using the technique that we learned in the previous
+section by typing the following in the browser console:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//tbody/tr[td]")
+</code></pre></div></div>
+
+<p>returns something like</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [672]
+</code></pre></div></div>
+
+<p>which we can explore in the console to make sure this is the right data.</p>
+
+<p>Scraper also recognized that there were two columns in that table, and has accordingly
+created two such columns (highlighted in blue in the screenshot), 
+each with its own XPath selector, <code class="highlighter-rouge">*[1]</code> and <code class="highlighter-rouge">*[2]</code>.</p>
+
+<p>To understand what this means, we have to remember that XPath queries are relative to the
+current context node. The context node has been set by the Selector query above, so
+those queries are relative to the array of <code class="highlighter-rouge">tr</code> elements that has been selected.</p>
+
+<p>We can replicate their effect by trying out</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//tbody/tr[td]/*[1]")
+</code></pre></div></div>
+
+<p>in the console. This should select only the first column of the table. The same goes for the
+second column.</p>
+
+<p>But in this case, we don’t need to fiddle with the XPath queries too much, as Scraper was able to deduce
+them for us, and we can use the export functions to either create a Google Spreadsheet with the
+results, or copy them into the clipboard in Tab Separated Values (TSV) format for pasting into
+a text document, a spreadsheet or Open Refine.</p>
+
+<p>There is one bit of data cleanup we might want to do, though. If we paste the data copied from Scraper
+into a text document, we see something like this:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Name	Constituency
+A	back to top
+                                 Abbott, Ms Diane                                 (Labour)                             	Hackney North and Stoke Newington
+                                 Abrahams, Debbie                                 (Labour)                             	Oldham East and Saddleworth
+</code></pre></div></div>
+
+<p>This is because there are a lot of unnecessary white spaces in the HTML that’s behind that table, which
+are being captured by Scraper. We can however tweak the XPath column selectors to take advantage of the
+<code class="highlighter-rouge">normalize-space</code> XPath function:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>normalize-space(*[1])
+normalize-space(*[2])
+</code></pre></div></div>
+
+<p><img src="../fig/scraper-ukparl-02.png" alt="Screenshot of the Scraper window showing the Column selectors" /></p>
+
+<p>We now need to tell Scraper to scrape the data again by using our new selectors, this is done by clicking
+on the “Scrape” button. The preview will not noticeably change, but if we now copy again the results
+and paste them in our text editor, we should see</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Name	Constituency
+A	back to top
+Abbott, Ms Diane (Labour)	Hackney North and Stoke Newington
+Abrahams, Debbie (Labour)	Oldham East and Saddleworth
+Adams, Nigel (Conservative)	Selby and Ainsty
+</code></pre></div></div>
+
+<p>which is a bit cleaner.</p>
+
+<blockquote class="challenge">
+  <h2 id="scrape-the-list-of-ontario-mpps">Scrape the list of Ontario MPPs</h2>
+  <p>Use Scraper to export the list of <a href="https://www.ola.org/en/members/current">current members of the Ontario Legislative Assembly</a>
+and try exporting the results in your favourite spreadsheet or data analysis
+software.</p>
+
+  <p>Once you have done that, try adding a third column containing the URLs that are underneath
+the names of the MPPs and that are leading to the detail page for each parliamentarian.</p>
+
+  <p>Tips:</p>
+
+  <ul>
+    <li>To add another column in Scraper, use the little green “+” icon in the columns list.</li>
+    <li>Look at the source code and try out XPath queries in the console until you find what
+you are looking for.</li>
+    <li>The syntax to select the value of an attribute of the type <code class="highlighter-rouge">&lt;element attribute="value"&gt;</code>
+is <code class="highlighter-rouge">element/@attribute</code>.</li>
+    <li>The <code class="highlighter-rouge">concat()</code> XPath function can be use to concatenate things.</li>
+  </ul>
+
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+
+    <p>Add a third column with the XPath query</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>*[1]/a/@href
+</code></pre></div>    </div>
+
+    <p><img src="../fig/scraper-ontparl-01.png" alt="Screenshot of the Scraper window on the Ontario MPP page" /></p>
+
+    <p>This extracts the URLs, but as luck would have it, those URLs are relative to the list
+page (i.e. they are missing <code class="highlighter-rouge">https://www.ola.org/en/members/current</code>). We can use the
+<code class="highlighter-rouge">concat()</code> XPath function to construct the full URLs:</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>concat('https://www.ola.org',*[1]/a/@href)
+</code></pre></div>    </div>
+
+    <p><img src="../fig/scraper-ontparl-02.png" alt="Screenshot of the Scraper window on the Ontario MPP page" /></p>
+
+  </blockquote>
+</blockquote>
+
+<h2 id="custom-xpath-queries">Custom XPath queries</h2>
+
+<p>Sometimes, however, we do have to do a bit of work to get Scraper to select the data elements
+that we are interested in.</p>
+
+<p>Going back to the example of the Canadian Parliament we saw in the introduction,
+there is a page on the same website that <a href="http://www.ourcommons.ca/Parliamentarians/en/members/addresses">lists the mailing addresses</a> of all
+parliamentarians. We are interested in scraping those addresses.</p>
+
+<p>If we select the addresses for the first MP and try the “Scrape similar” function…</p>
+
+<p><img src="../fig/scraper-canparl-01.png" alt="Screenshot of the Scraper context menu being used on an address block" /></p>
+
+<p>Scraper produces this:</p>
+
+<p><img src="../fig/scraper-canparl-02.png" alt="Screenshot of the Scraper window trying to scrape addresses" /></p>
+
+<p>which does a nice job separating the address elements, but what if instead we want a table of
+the addresses of all MPs? Selecting multiple addresses instead does not help. Remember what we said
+about computers not being smart about structuring information? This is a good example. We humans
+know what the different blocks of texts on the screen mean, but the computer will need some help from
+us to make sense of it.</p>
+
+<p>We need to tell Scraper what exactly to scrape, using XPath.</p>
+
+<p>If we look at the HTML source code of that page, we see that individual MPs are all within <code class="highlighter-rouge">ul</code>
+elements:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(...)
+&lt;ul&gt;
+   &lt;li&gt;&lt;h3&gt;Aboultaif, Ziad&lt;/h3&gt;&lt;/li&gt;
+   &lt;li&gt;
+      &lt;span class="addresstype"&gt;Hill Office&lt;/span&gt;
+      &lt;span&gt;Telephone:&lt;/span&gt;
+      &lt;span&gt;613-992-0946&lt;/span&gt;
+      &lt;span&gt;Fax:&lt;/span&gt;            
+      &lt;span&gt;613-992-0973&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li&gt;
+         &lt;ul&gt;       
+            &lt;li&gt;&lt;span class="addresstype"&gt;Constituency Office(s)&lt;/span&gt;&lt;/li&gt;
+            &lt;li&gt;                            
+               &lt;span&gt;8119 - 160 Avenue (Main Office)&lt;/span&gt;
+               &lt;span&gt;Suite 204A&lt;/span&gt;
+               &lt;span&gt;Edmonton, Alberta&lt;/span&gt;
+               &lt;span&gt;T5Z 0G3&lt;/span&gt;
+               &lt;span&gt;Telephone:&lt;/span&gt; &lt;span&gt;780-822-1540&lt;/span&gt;
+               &lt;span&gt;Fax:&lt;/span&gt; &lt;span&gt;780-822-1544&lt;/span&gt;                                    
+               &lt;span class="spacer"&gt;&lt;/span&gt;
+            &lt;/li&gt;                         
+      &lt;/ul&gt;
+   &lt;/li&gt;                                   
+&lt;/ul&gt;   
+(...)
+</code></pre></div></div>
+
+<p>So let’s try changing the Selector XPath in Scraper to</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//body/div[1]/div/ul
+</code></pre></div></div>
+
+<p>and hit “Scrape”. We get something that is closer to what we want, with one line per MP, but
+the addresses are still all in one block of unstructured text:</p>
+
+<p><img src="../fig/scraper-canparl-03.png" alt="Screenshot of the Scraper window trying to scrape addresses" /></p>
+
+<p>Looking closer at the HTML source, we see that name and addresses are separated by <code class="highlighter-rouge">li</code> elements
+within those <code class="highlighter-rouge">ul</code> elements. So let’s add a few columns based on those elements:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./li[1] -&gt; Name
+./li[2] -&gt; Hill Office
+./li[3] -&gt; Constituency
+</code></pre></div></div>
+
+<p>This produces the following result:</p>
+
+<p><img src="../fig/scraper-canparl-04.png" alt="Screenshot of the Scraper window scraping addresses" /></p>
+
+<p>The addresses are still one big block of text each, but at least we now have a table for all MPs
+and the addresses are separated.</p>
+
+<blockquote class="challenge">
+  <h2 id="scrape-the-canadian-mps-phone-numbers">Scrape the Canadian MPs’ phone numbers</h2>
+  <p>Keep working on the example above to add a column for the Hill Office phone number
+and fax number for each MP.</p>
+
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+
+    <p>Add columns with the XPath query</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./li[2]/span[3] -&gt; Hill Office Phone
+./li[2]/span[5] -&gt; Hill Office Fax
+</code></pre></div>    </div>
+
+    <p><img src="../fig/scraper-canparl-05.png" alt="Screenshot of the Scraper window on scraping MP phone numbers" /></p>
+
+  </blockquote>
+</blockquote>
+:ET

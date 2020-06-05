@@ -18,12 +18,13 @@ keypoints:
 
 # Using the Scraper Chrome extension
 
-<header 1 Using the Scraper Chrome extension>
-Now we are finally ready to do some web scraping. For this lesson, we will be using two UCSB department webpages: East Asian Languages and Cultural Studies and Jewish Studies. We are interested in scrapping contact information from faculty within these departments with the help of Xpath and Scraper. To do so, we will use the Scraper extension in the Chrome browser (refer to the [Setup](FIXME). section for help installing these tools).
-First, let’s focus our attention on the East Asian Languages and Cultural Studies webpage (https://www.eastasian.ucsb.edu/people/faculty/). We are interested in downloading the list of faculty names and their email addresses.
+Now we are finally ready to do some web scraping. For this lesson, we will be using two UCSB department webpages: East Asian Languages and Cultural Studies and Jewish Studies. We are interested in scrapping contact information from faculty within these departments with the help of Xpath and Scraper. To do so, we will use the Scraper extension in the Chrome browser (refer to the [Setup](FIXME) section for help installing these tools).
+First, let’s focus our attention on the East Asian Languages and Cultural Studies webpage [https://www.eastasian.ucsb.edu/people/faculty/](https://www.eastasian.ucsb.edu/people/faculty/). We are interested in downloading the list of faculty names and their email addresses.
 <Image 1 East asian website>
-<header 2 Scrape similar >
+	
+## Scrape similar 
 With the extension installed, we can select the first row in the faculty list, do a right-click and choose “Scrape similar” from the contextual menu. 
+
 <Image 2 East asian website/scrape>
  
 You can select the picture as well. Make sure you do not right-click on a hyperlinked text. 
@@ -35,39 +36,70 @@ Either operation will bring up the Scraper window:
 
 <Image 4 Scraper Asian studies with blue and red rectangles>
  
-We can notice that Scraper has generated XPath queries that correspond to the data we had selected upon calling it. The Selector (highlighted in red in the above screenshot) has been set to //tr[td] which selects all the rows of the table, delimiting the data we want to extract.
+We can notice that Scraper has generated XPath queries that correspond to the data we had selected upon calling it. The Selector (highlighted in blue in the above screenshot) has been set to //tr[td] which selects all the rows of the table, delimiting the data we want to extract.
 In fact, we can try out that query using the technique that we learned in the previous section by typing the following in the browser console:
+
+~~~
 Tip: Use the following shortcuts to Open Console: Panel Mac (Command+Option+J) Windows/Linux (Control+Shift+J). 
-Remember: <tr> Defines a row in a table and <td> defines a cell is a table
-<code $x("//tr[td]")>
-The query will return something like
-< output <- (48) >
+Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
+``` $x("//tr[td]")```
+~~~
+{: .callout}
+
+The query will return something like:
+~~~
+output <- (48)
+~~~
+{: .output}
+
 Which we can explore in the console and check for highlights to make sure this is the right data.
+
 Could you guess why we got 48 as a result?
+
 There are 24 rows with faculty profiles, but in between them we had tr box shadows, if we unselect “Exclude empty results” which is set by default, we will get empty rows in our output. So it is wise to keep this option always selected.
-Scraper also recognized that there were four columns in that table, and has accordingly created four such columns (highlighted in blue in the screenshot), each with its own XPath selector, *[1], *[2], *[3] e *[4].
+
+Scraper also recognized that there were four columns in that table, and has accordingly created four such columns (highlighted in red in the screenshot), each with its own XPath selector, ```*[1]```, ```*[2]```, ```*[3]``` and ```*[4]```.
+
 To understand what this means, we have to remember that XPath queries are relative to the current context node. The context node has been set by the Selector query above, so those queries are relative to the array of tr elements that have been selected.
+
 We can replicate their effect by trying out the following expression in the console:
-<code $x("//tr[td]/*[4]")>
+~~~
+$x("//tr[td]/*[4]")
+~~~
+{: .source}
+
 This should select only the first column of the table. The same goes for the second column.
+
 But in this case, we don’t need to fiddle with the XPath queries too much, as Scraper was able to deduce them for us, and we can use the export functions to either create a Google Spreadsheet with the results, or copy them into the clipboard in Tab Separated Values (TSV) format for pasting into a text document or a spreadsheet.
+
 There is a bit of data cleaning we might want to do prior to that, though. 
-The first column is empty because we have selected the photo and scraper recognizes that as an element, however, images are not included in the scrapping process, so we can remove it using the red (-) icon and click on scrape to see the change. Let’s do the same thing with column three because we are not interested in their positions or specialties now.
-We also want to rename the other columns remaining accordingly, so let’s change them to Faculty_name and Contact_info.
-<header 2 Custom XPath queries>
+
+1. The first column is empty because we have selected the photo and scraper recognizes that as an element, however, images are not included in the scrapping process, so we can remove it using the red (-) icon and click on scrape to see the change. Let’s do the same thing with column three because we are not interested in their positions or specialties now.
+1. We also want to rename the other columns remaining accordingly, so let’s change them to Faculty_name and Contact_info.
+
+## Custom XPath queries
 Sometimes, however, we do have to do a bit of work to get Scraper to select the data elements that we are interested in.
+
 Note that we still have other info such as office location and times along with emails. So what if we want to get a column only with emails instead? We should add a new column and rename it as Email and use Xpath to help us to refine that. To add another column in Scraper, use the little green "+" icon in the columns list. 
+
 Let’s inspect the link to identify it on the developer’s console the exact path for the email addresses. Select the email > right-click (make sure to not click in the email) > Inspect. Then, hover the mouse over the email > right-click > copy > copy Xpath. Note that there will be an option to copy the Full path but you do not need that as we have already scrapped from a portion of the website.
-Tip: You can copy the path to a notepad, it will help you to compare with scrap and understand better where the element you are interested in is located. 
-You should have the path bellow or something slightly different if you have selected other faculty email as the tr [row number] will represent the data you have selected:
+
+> ## Tip:
+> You can copy the path to a notepad, it will help you to compare with scrap and understand better where the element you are
+> interested in is located. 
+> You should have the path bellow or something slightly different if you have selected other faculty email as the tr 
+>[row number] will represent the data you have selected:
+>
+>~~~
+>//*[@id="site-main"]/div/div/div[2]/div/table/tbody/tr[1]/td[4]/a 
+>~~~
+>{: .source}
+{: .callout}
  
-<code //*[@id="site-main"]/div/div/div[2]/div/table/tbody/tr[1]/td[4]/a >
  
- 
-<Challenge:>
- 
+Challenge: Scrape Emails
 Which path would you have to provide to Scraper to get the emails in one column?
- 
+
 Answer:
 You should get a column with emails with the following path expression after hitting scrape
 ./td[4]/a

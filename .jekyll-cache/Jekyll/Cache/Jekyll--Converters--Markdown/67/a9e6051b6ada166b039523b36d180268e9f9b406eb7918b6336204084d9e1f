@@ -1,0 +1,40 @@
+I"�<h2 id="resources">Resources</h2>
+
+<ul>
+  <li><a href="http://www.w3schools.com/js/js_htmldom_navigation.asp">W3Schools: JavaScript HTML DOM Navigation</a></li>
+  <li><a href="https://schoolofdata.org/handbook/recipes/scraper-extension-for-chrome/">Scraper extension tutorial</a></li>
+  <li><a href="/library-webscraping/extras/xpath-cheatsheet.md.pdf">XPath Cheatsheet</a></li>
+  <li><a href="https://doc.scrapy.org/en/latest/index.html">Scrapy documentation</a></li>
+  <li><a href="https://doc.scrapy.org/en/latest/intro/tutorial.html">Scrapy tutorial</a></li>
+  <li><a href="https://blog.scrapinghub.com/2016/08/25/how-to-crawl-the-web-politely-with-scrapy/">How to crawl the web politely</a></li>
+  <li><a href="http://schoolofdata.org/handbook/courses/scraping/">Additional resources on scraping by the School of Data</a></li>
+</ul>
+
+<h2 id="glossary">Glossary</h2>
+
+<p><strong>CSS selectors</strong><br />
+CSS selectors serve a similar function to XPath, in selecting parts of an HTML document, but were designed for web development (for applying styles such as colour to parts of a document). As such, they are more popular, but are limited in what they can express relative to XPath. Every CSS selector can be translated into an equivalent XPath expression, but not vice-versa. CSS selectors are constructed by specifying properties of the targets combined with properties of their context. CSS selectors can be evaluated using the <code class="highlighter-rouge">document.querySelectorAll()</code> function.</p>
+
+<p><strong>Denial of service attack</strong><br />
+If someone sends too many requests over a short span of time, they can prevent other “normal” users from accessing the site during that time, or even cause the server to run out of resources and crash. In fact, this is such an efficient way to disrupt a web site that hackers are often doing it on purpose. Modern web servers include measures to ward off such illegitimate use of their resources and their first line of defense often involves refusing any further requests coming from this IP address. Since, scraping tools’ usually have developed measures to avoid inadvertently launching such an attack, the risks of causing trouble is limited.</p>
+
+<p><strong>Visual scrapers</strong><br />
+Visual scrapers are tools in which the user can visually select the elements to extract, and the logical order to follow in performing a sequence of extractions. They require little or no code, and assist in designing XPath or CSS selectors. These tools vary in how flexible they are, how easy to use, to what extent they help you identify and debug scraping problems, how easy it is to keep and transfer your scraper to another service, and how costly the service is.</p>
+
+<p><strong>Web scraping</strong><br />
+Web scraping is a technique for targeted, automated extraction of information from websites. Similar extraction can be done manually but it is usually faster, more efficient and less error-prone to automate the task. Web scraping allows you to acquire non-tabular or poorly structured data from websites and convert it into a usable, structured format, such as a .csv file or spreadsheet.</p>
+
+<p><strong>Web scraping code of conduct</strong></p>
+<ul>
+  <li>Ask nicely.</li>
+  <li>Don’t download copies of documents that are clearly not public.</li>
+  <li>Check your local legislation.</li>
+  <li>Don’t share downloaded content illegally.</li>
+  <li>Share what you can.</li>
+  <li>Don’t break the Internet.</li>
+  <li>Publish your own data in a reusable way.</li>
+</ul>
+
+<p><strong>XPath</strong>  <br />
+These specify parts of a tree-structured document, be it XML or HTML. They can be very specific about which nodes to include or exclude.</p>
+:ET

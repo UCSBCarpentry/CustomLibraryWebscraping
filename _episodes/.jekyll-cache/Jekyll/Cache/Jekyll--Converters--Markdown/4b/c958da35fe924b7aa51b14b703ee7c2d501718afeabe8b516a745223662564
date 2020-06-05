@@ -1,0 +1,1206 @@
+I"<h2 id="recap">Recap</h2>
+<p>Here is what we have learned so far:</p>
+
+<ul>
+  <li>We can use XPath queries to select what elements on a page to scrape.</li>
+  <li>We can look at the HTML source code of a page to find how target elements are structured and
+how to select them.</li>
+  <li>We can use the browser console and the <code class="highlighter-rouge">$x(...)</code> function to try out XPath queries on a live site.</li>
+  <li>We can use the Scraper browser extension to scrape data from a single web page. Its interface even
+tries to guess the XPath query to target the elements we are interested in.</li>
+</ul>
+
+<p>This is quite a toolset already, and it’s probably sufficient for a number of use cases, but there are
+limitations in using the tools we have seen so far. Scraper requires manual intervention and only scrapes
+one page at a time. Even though it is possible to save a query for later, it still requires us to operate
+the extension.</p>
+
+<h2 id="introducing-scrapy">Introducing Scrapy</h2>
+
+<p>Enter <a href="https://scrapy.org/">Scrapy</a>! Scrapy is a <em>framework</em> for the <a href="https://swcarpentry.github.io/python-novice-inflammation/">Python</a>
+programming language.</p>
+
+<blockquote>
+
+  <p>A framework is a reusable, “semi-complete” application that can be specialized to produce custom applications.
+(Source: <a href="http://www1.cse.wustl.edu/~schmidt/CACM-frameworks.html">Johnson &amp; Foote, 1988</a>)</p>
+
+</blockquote>
+
+<p>In other words, the Scrapy framework provides a set of Python scripts that contain most of the code required
+to use Python for web scraping. We need only to add the last bit of code required to tell Python what
+pages to visit, what information to extract from those pages, and what to do with it. Scrapy also
+comes with a set of scripts to setup a new project and to control the scrapers that we will create.</p>
+
+<p>It also means that Scrapy doesn’t work on its own. It requires a working Python installation
+(Python 2.7 and higher or 3.4 and higher - it should work in both Python 2 and 3), and a series of
+libraries to work. If you haven’t installed Python or Scrapy on your machine, you can refer to the
+<a href="/lc-webscraping/setup">setup instructions</a>. If you install Scrapy as suggested there, it should take care to install all
+required libraries as well.</p>
+
+<p>You can verify that you have the latest version of Scrapy installed by typing</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy version
+</code></pre></div></div>
+
+<p>in a shell. If all is good, you should get the following back (as of February 2017):</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Scrapy 1.3.2
+</code></pre></div></div>
+
+<p>If you have a newer version, you should be fine as well.</p>
+
+<p>To introduce the use of Scrapy, we will reuse the same example we used in the previous
+section. We will start by scraping a list of URLs from <a href="http://www.ontla.on.ca/web/members/members_current.do?locale=en">the list of members of the Ontario Legislative
+Assembly</a> and then visit those URLs to
+scrape <a href="http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085">detailed information</a>
+about those ministers.</p>
+
+<h2 id="setup-a-new-scrapy-project">Setup a new Scrapy project</h2>
+
+<p>The first thing to do is to create a new Scrapy project.</p>
+
+<p>Let’s navigate first to a folder on our drive where we want to create our project (refer to Software
+Carpentry’s lesson about the <a href="http://swcarpentry.github.io/shell-novice/">UNIX shell</a> if you are
+unsure about how to do that). Then, type the following</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy startproject ontariompps
+</code></pre></div></div>
+
+<p>where <code class="highlighter-rouge">ontariompps</code> is the name of our project.</p>
+
+<p>Scrapy should respond will something similar to (the paths will reflect your own file structure)</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>New Scrapy project 'ontariompps', using template directory '/Users/thomas/anaconda/lib/python3.5/site-packages/scrapy/templates/project', created in:
+    /Users/thomas/Documents/Computing/python-projects/scrapy/ontariompps
+
+You can start your first spider with:
+    cd ontariompps
+    scrapy genspider example example.com
+</code></pre></div></div>
+
+<p>If we list the files in the directory we ran the previous command</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ls -F
+</code></pre></div></div>
+
+<p>we should see that a new directory was created:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ontariompps/
+</code></pre></div></div>
+
+<p>(alongside any other files and directories you had lying around previously). Moving into that new
+directory</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd ontariompps
+</code></pre></div></div>
+
+<p>we can see that it contains two items:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ls -F
+</code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ontariompps/	scrapy.cfg
+</code></pre></div></div>
+
+<p>Yes, confusingly, Scrapy creates a subdirectory called <code class="highlighter-rouge">ontariompps</code> within the <code class="highlighter-rouge">ontariompps</code> project
+directory. Inside that <em>second</em> directory, we see a bunch of additional files:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ls -F ontariompps
+</code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>__init__.py	items.py	settings.py
+__pycache__	pipelines.py	spiders/
+</code></pre></div></div>
+
+<p>To recap, here is the structure that <code class="highlighter-rouge">scrapy startproject</code> created:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ontariompps/			# the root project directory
+	scrapy.cfg		# deploy configuration file
+
+	ontariompps/		# project's Python module, you'll import your code from here
+		__init__.py
+
+		items.py		# project items file
+
+		pipelines.py	# project pipelines file
+
+		settings.py	# project settings file
+
+		spiders/		# a directory where you'll later put your spiders
+			__init__.py
+			...
+</code></pre></div></div>
+
+<p>We will introduce what those files are for in the next paragraphs. The most important item is the
+<code class="highlighter-rouge">spiders</code> directory: this is where we will write the scripts that will scrape the pages we
+are interested in. Scrapy calls such scripts <em>spiders</em>.</p>
+
+<h2 id="creating-a-spider">Creating a spider</h2>
+
+<p>Spiders are the business end of the scraper. It’s the bit of code that combs through a website and harvests data.
+Their general structure is as follows:</p>
+<ul>
+  <li>One or more <em>start URLs</em>, where the spider will start crawling</li>
+  <li>A list of <em>allowed domains</em> to constrain the pages we allow our spider to crawl (this is a good way to
+avoid mistakenly writing an out-of-hand spider that mistakenly starts crawling the entire Internet…)</li>
+  <li>A method called <code class="highlighter-rouge">parse</code> in which we will write what data the spider should be looking for on the pages
+it visits, what links to follow and how to parse found data.</li>
+</ul>
+
+<p>To create a spider, Scrapy provides a handy command-line tool:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy genspider &lt;SCRAPER NAME&gt; &lt;START URL&gt;
+</code></pre></div></div>
+
+<p>We just need to replace <code class="highlighter-rouge">&lt;SCRAPER NAME&gt;</code> with the name we want to give our spider and <code class="highlighter-rouge">&lt;START URL&gt;</code> with
+the URL we want to spider to crawl. In our case, we can type:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy genspider mppaddresses www.ontla.on.ca/web/members/members_current.do?locale=en
+</code></pre></div></div>
+
+<p>This will create a file called <code class="highlighter-rouge">mppaddresses.py</code> inside the <code class="highlighter-rouge">spiders</code> directory of our project.
+Using our favourite text editor, let’s open that file. It should look something like this:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses"  # The name of this spider
+	
+    # The allowed domain and the URLs where the spider should start crawling:
+    allowed_domains = ["www.ontla.on.ca/web/members/members_current.do?locale=en"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+	
+    # And a 'parse' function, which is the main method of the spider. The content of the scraped
+    # URL is passed on as the 'response' object:
+    def parse(self, response):
+        pass
+</code></pre></div></div>
+
+<p>Note that here some comments have been added for extra clarity, they will not be there upon
+first creating a spider.</p>
+
+<blockquote class="callout">
+  <h2 id="dont-include-http-when-running-scrapy-genspider">Don’t include <code class="highlighter-rouge">http://</code> when running <code class="highlighter-rouge">scrapy genspider</code></h2>
+
+  <p>The current version of Scrapy (1.3.2 - February 2017) apparently only expects URLs without
+<code class="highlighter-rouge">http://</code> when running <code class="highlighter-rouge">scrapy genspider</code>. If you do include the <code class="highlighter-rouge">http</code> prefix, you might
+see that the value in <code class="highlighter-rouge">start_url</code> in the generated spider will have that prefix twice, because
+Scrapy appends it by default. This will cause your spider to fail. Either run <code class="highlighter-rouge">scrapy genspider</code>
+without <code class="highlighter-rouge">http://</code> or check the resulting spider so that it looks like the code above.</p>
+
+</blockquote>
+
+<blockquote class="discussion">
+  <h2 id="object-oriented-programming-and-python-classes">Object-oriented programming and Python classes</h2>
+
+  <p>You might be unfamiliar with the <code class="highlighter-rouge">class MppaddressesSpider(scrapy.Spider)</code> syntax used above.
+This is an example of <a href="https://en.wikipedia.org/wiki/Object-oriented_programming">Object-oriented programming</a>.</p>
+
+  <p>All elements of a piece of Python code are <strong>objects</strong>: functions, variables, strings, integers, etc.
+Objects of a certain type have certain things in common. For example, it is possible to apply special
+functions to all strings in Python by using syntax such as <code class="highlighter-rouge">mystring.upper()</code> (this will make the contents
+of <code class="highlighter-rouge">mystring</code> all uppercase).</p>
+
+  <p>We call these types of objects <strong>classes</strong>. A class defines the components of an object (called <strong>attributes</strong>),
+as well as specific functions, called <strong>methods</strong>, we might want to run on those objects.
+For example, we could define a class called <code class="highlighter-rouge">Pet</code> that would contain the attributes <code class="highlighter-rouge">name</code>, <code class="highlighter-rouge">colour</code>, <code class="highlighter-rouge">age</code> etc.
+as well as the methods <code class="highlighter-rouge">run()</code> or <code class="highlighter-rouge">cuddle()</code>. Those are common to all pets.</p>
+
+  <p>We can use the Object-oriented paradigm to describe a specific type of pet: <code class="highlighter-rouge">Dog</code> would <strong>inherit</strong> the
+attributes and methods of <code class="highlighter-rouge">Pet</code> (dogs have names and can run and cuddle) but would <strong>extend</strong> the <code class="highlighter-rouge">Pet</code> class
+by adding dog-specific things like a <code class="highlighter-rouge">pedigree</code> attribute and a <code class="highlighter-rouge">bark()</code> method.</p>
+
+  <p>The code in the example above is defining a <strong>class</strong> called <code class="highlighter-rouge">MppaddressesSpider</code> that <strong>inherits</strong> the <code class="highlighter-rouge">Spider</code> class
+defined by Scrapy (hence the <code class="highlighter-rouge">scrapy.Spider</code> syntax). We are <strong>extending</strong> the default <code class="highlighter-rouge">Spider</code> class by defining
+the <code class="highlighter-rouge">name</code>, <code class="highlighter-rouge">allowed_domains</code> and <code class="highlighter-rouge">start_urls</code> attributes, as well as the <code class="highlighter-rouge">parse()</code> method.</p>
+
+</blockquote>
+
+<blockquote class="callout">
+  <h2 id="the-spider-class">The <code class="highlighter-rouge">Spider</code> class</h2>
+
+  <p>A <code class="highlighter-rouge">Spider</code> class will define how a certain site (or a group of sites, defined in <code class="highlighter-rouge">start_urls</code>) will be scraped,
+including how to perform the crawl (i.e. follow links) and how to extract structured data from their pages
+(i.e. scraping items) in the <code class="highlighter-rouge">parse()</code> method.</p>
+
+  <p>In other words, Spiders are the place where we define the custom behaviour for crawling and parsing
+pages for a particular site (or, in some cases, a group of sites).</p>
+
+</blockquote>
+
+<p>Once we have the spider open in a text editor, we can start by cleaning up a little the code that Scrapy
+has automatically generated.</p>
+
+<blockquote class="challenge">
+  <h2 id="paying-attention-to-allowed_domains">Paying attention to <code class="highlighter-rouge">allowed_domains</code></h2>
+
+  <p>Looking at the code that was generated by <code class="highlighter-rouge">genspider</code>, we see that by default the entire start URL 
+has ended up in the <code class="highlighter-rouge">allowed_domains</code> attribute.</p>
+
+  <p>Is this desired? What do you think would happen
+if later in our code we wanted to scrape a page living at the address <code class="highlighter-rouge">www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085</code>?</p>
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+
+    <p><code class="highlighter-rouge">allowed_domains</code> is a safeguard for our spider, it will restrict its ability to scrape pages
+outside of a certain realm. An URL is structured as a path to a resource, with the root directory
+at the beginning and a set of “subdirectories” after that. In <code class="highlighter-rouge">www.mydomain.ca/house/dog.html</code>,
+<code class="highlighter-rouge">http://www.mydomain.ca/</code> is the root, <code class="highlighter-rouge">house/</code> is a first level directory and <code class="highlighter-rouge">dog.html</code> is a file
+sitting inside the <code class="highlighter-rouge">house/</code> directory.</p>
+
+    <p>If we restrict a Scrapy spider with <code class="highlighter-rouge">allowed_domains = ["www.mydomain.ca/house"]</code>, it means
+that the spider will be able to scrape everything that’s inside the <code class="highlighter-rouge">www.mydomain.ca/house/</code> directory (including
+subdirectories), but not, say, pages that would be in <code class="highlighter-rouge">www.mydomain.ca/garage/</code>. However,
+if we set <code class="highlighter-rouge">allowed_domains = ["www.mydomain.ca/"]</code>, the spider can scrape both the contents of
+the <code class="highlighter-rouge">house/</code> and <code class="highlighter-rouge">garage/</code> directories.</p>
+
+    <p>To answer the question, leaving <code class="highlighter-rouge">allowed_domains = ["www.ontla.on.ca/web/members/members_current.do?locale=en"]</code>
+would restrict the spider to pages with URLs of the same pattern, and 
+<code class="highlighter-rouge">http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085</code>
+if of a different pattern, so Scrapy would prevent the spider from scraping it.</p>
+
+  </blockquote>
+
+  <p>How should <code class="highlighter-rouge">allowed_domains</code> be set to prevent this from happening?</p>
+
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+
+    <p>We should let the spider scrape all pages inside the <code class="highlighter-rouge">www.ontla.on.ca</code> domain by editing
+it so that it reads:</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>allowed_domains = ["www.ontla.on.ca"]
+</code></pre></div>    </div>
+
+  </blockquote>
+
+</blockquote>
+
+<p>Here is what the spider looks like after cleaning the code a little:</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses"  
+	
+    allowed_domains = ["www.ontla.on.ca"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        pass
+</code></pre></div></div>
+
+<p>Don’t forget to save the file once changes have been applied.</p>
+
+<h2 id="running-the-spider">Running the spider</h2>
+
+<p>Now that we have a first spider setup, we can try running it. Going back to the Terminal, we first make sure
+we are located in the project’s top level directory (where the <code class="highlighter-rouge">scrapy.cfg</code> file is) by using <code class="highlighter-rouge">ls</code>, <code class="highlighter-rouge">pwd</code> and
+<code class="highlighter-rouge">cd</code> as required, then we can run:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses
+</code></pre></div></div>
+
+<p>Note that we can now use the name we have chosen for our spider (<code class="highlighter-rouge">mppaddresses</code>, as specified in the <code class="highlighter-rouge">name</code> attribute)
+to call it. This should produce the following result</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2016-11-07 22:28:51 [scrapy] INFO: Scrapy 1.3.2 started (bot: mppaddresses)
+
+(followed by a bunch of debugging output ending with:)
+
+2017-02-26 22:08:51 [scrapy.core.engine] DEBUG: Crawled (200) &lt;GET http://www.ontla.on.ca/web/members/members_current.do?locale=en/&gt; (referer: None)
+2017-02-26 22:08:52 [scrapy.core.engine] INFO: Closing spider (finished)
+2017-02-26 22:08:52 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 477,
+ 'downloader/request_count': 2,
+ 'downloader/request_method_count/GET': 2,
+ 'downloader/response_bytes': 34187,
+ 'downloader/response_count': 2,
+ 'downloader/response_status_count/200': 2,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2017, 2, 27, 3, 8, 52, 16404),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 7,
+ 'response_received_count': 2,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2017, 2, 27, 3, 8, 51, 594573)}
+2017-02-26 22:08:52 [scrapy.core.engine] INFO: Spider closed (finished)
+
+</code></pre></div></div>
+
+<p>The line that starts with <code class="highlighter-rouge">DEBUG: Crawled (200)</code> is good news, as it tells us that the spider was
+able to crawl the website we were after. The number in parentheses is the <em>HTTP status code</em> that
+Scrapy received in response of its request to access that page. 200 means that the request was successful
+and that data (the actual HTML content of that page) was sent back in response.</p>
+
+<p>However, we didn’t do anything with it, because the <code class="highlighter-rouge">parse</code> method in our spider is currently empty.
+Let’s change that by editing the spider as follows (note the contents of the <code class="highlighter-rouge">parse</code> method):</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses"
+    allowed_domains = ["www.ontla.on.ca"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        with open("test.html", 'wb') as file:
+            file.write(response.body)
+</code></pre></div></div>
+
+<p>Now, if we go back to the command line and run our spider again</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses
+</code></pre></div></div>
+
+<p>we should get similar debugging output as before, but there should also now be a file called
+<code class="highlighter-rouge">test.html</code> in our project’s root directory:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ls -F
+</code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ontariompps/	scrapy.cfg	test.html
+</code></pre></div></div>
+
+<p>We can check that it contains the HTML from our target URL:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>less test.html
+</code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">"http://www.w3.org/1999/xhtml"</span> <span class="na">lang=</span><span class="s">"en"</span> <span class="na">xml:lang=</span><span class="s">"en"</span> <span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+(...)
+<span class="nt">&lt;title&gt;</span>
+Legislative Assembly of Ontario |
+Members (MPPs) |
+Current MPPs<span class="nt">&lt;/title&gt;</span>
+(...)_
+</code></pre></div></div>
+
+<h2 id="defining-which-elements-to-scrape-using-xpath">Defining which elements to scrape using XPath</h2>
+
+<p>Now that we know how to access the content of the <a href="http://www.ontla.on.ca/web/members/members_current.do?locale=en">web page with the list of all Ontario MPPs</a>,
+the next step is to extract the information we are interested in, in that case the URLs pointing
+to the detail pages for each politician.</p>
+
+<p>Using the techniques we have <a href="/02-xpath">learned earlier</a>, we can start by looking at
+the source code for our <a href="http://www.ontla.on.ca/web/members/members_current.do?locale=en">target page</a>
+by using either the “View Source” or “Inspect” functions of our browser.
+Here is an excerpt of that page:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(...)
+&lt;div class="tablebody"&gt;
+	&lt;table&gt;
+		&lt;tr class="oddrow" id="MemberID7085"&gt;
+			&lt;td class="mppcell" &gt;
+				&lt;a href="members_detail.do?locale=en&amp;amp;ID=7085"&gt;
+					Albanese, Hon Laura&amp;nbsp;
+				&lt;/a&gt;
+			&lt;/td&gt;
+			&lt;td class="ridingcell" &gt;
+				York South&amp;#8212;Weston&amp;nbsp;
+			&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr class="evenrow" id="MemberID7275"&gt;
+			&lt;td class="mppcell" &gt;
+				&lt;a href="members_detail.do?locale=en&amp;amp;ID=7275"&gt;
+					Anderson, Granville&amp;nbsp;
+				&lt;/a&gt;
+			&lt;/td&gt;
+			&lt;td class="ridingcell" &gt;
+				Durham&amp;nbsp;
+			&lt;/td&gt;
+		&lt;/tr&gt;
+		(...)
+	&lt;/table&gt;
+&lt;/div&gt;
+(...)
+</code></pre></div></div>
+
+<p>There are different strategies to target the data we are interested in. One of them is to identify
+that the URLs are inside <code class="highlighter-rouge">td</code> elements of the class <code class="highlighter-rouge">mppcell</code>.</p>
+
+<p>We recall that the XPath syntax to access all such elements is <code class="highlighter-rouge">//td[@class='mppcell']</code>, which we can
+try out in the browser console:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; $x("//td[@class='mppcell']")
+</code></pre></div></div>
+
+<blockquote class="discussion">
+  <h2 id="selecting-elements-assigned-to-multiple-classes">Selecting elements assigned to multiple classes</h2>
+
+  <p>The above XPath works in this case because the target <code class="highlighter-rouge">td</code> elements are only assigned to the
+<code class="highlighter-rouge">mppcell</code> class. It wouldn’t work if those elements had more than one class, for example
+<code class="highlighter-rouge">&lt;td class="mppcell sampleclass"&gt;</code>. The more general syntax to select elements that belong to
+the <code class="highlighter-rouge">mppcell</code> class and potentially other classes as well is</p>
+
+  <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>`//*[contains(concat(" ", normalize-space(@class), " "), " mppcell ")]`
+</code></pre></div>  </div>
+
+  <p>This <a href="http://stackoverflow.com/a/9133579">comment on StackOverflow</a> has more details on
+this issue.</p>
+
+</blockquote>
+
+<p>Once we were able to confirm that we are targeting the right cells, we can expand our XPath query
+to only select the <code class="highlighter-rouge">href</code> attribute of the URL:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; $x("//td[@class='mppcell']/a/@href")
+</code></pre></div></div>
+
+<p>This returns an array of objects:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;- Array [ href="members_detail.do?locale=en&amp;amp;ID=7085", href="members_detail.do?locale=en&amp;amp;ID=7275", 103 more… ]
+</code></pre></div></div>
+
+<h3 id="debugging-using-the-scrapy-shell">Debugging using the Scrapy shell</h3>
+
+<p>As we learned in the previous section, using the browser console and the <code class="highlighter-rouge">$x()</code> syntax can be useful to make sure
+we are selecting the desired elements using our XPath queries. But it is not the only way. Scrapy provides a similar
+way to test out XPath queries, with the added benefit that we can then also debug how to further work on those
+queries from within Scrapy.</p>
+
+<p>This is achieved by calling the <em>Scrapy shell</em> from the command line:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy shell http://www.ontla.on.ca/web/members/members_current.do?locale=en/
+</code></pre></div></div>
+
+<p>which launches a Python console that allows us to type live Python and Scrapy code to
+interact with the page which Scrapy just downloaded from the provided URL. We can see that we are inside an
+interactive python console because the prompt will have changed to <code class="highlighter-rouge">&gt;&gt;&gt;</code>:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(similar Scrapy debug text as before)
+
+2017-02-26 22:31:04 [scrapy.core.engine] DEBUG: Crawled (200) &lt;GET http://www.ontla.on.ca/web/members/members_current.do?locale=en/&gt; (referer: None)
+[s] Available Scrapy objects:
+[s]   scrapy     scrapy module (contains scrapy.Request, scrapy.Selector, etc)
+[s]   crawler    &lt;scrapy.crawler.Crawler object at 0x1114356d8&gt;
+[s]   item       {}
+[s]   request    &lt;GET http://www.ontla.on.ca/web/members/members_current.do?locale=en/&gt;
+[s]   response   &lt;200 http://www.ontla.on.ca/web/members/members_current.do?locale=en/&gt;
+[s]   settings   &lt;scrapy.settings.Settings object at 0x111f40908&gt;
+[s]   spider     &lt;DefaultSpider 'default' at 0x11320acc0&gt;
+[s] Useful shortcuts:
+[s]   fetch(url[, redirect=True]) Fetch URL and update local objects (by default, redirects are followed)
+[s]   fetch(req)                  Fetch a scrapy.Request and update local objects 
+[s]   shelp()           Shell help (print this help)
+[s]   view(response)    View response in a browser
+&gt;&gt;&gt;
+</code></pre></div></div>
+
+<p>We can now try running the XPath query we just devised against the <code class="highlighter-rouge">response</code> object, which in Scrapy
+contains the downloaded web page:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; response.xpath("//td[@class='mppcell']/a/@href")
+</code></pre></div></div>
+
+<p>This will return a bunch of <code class="highlighter-rouge">Selector</code> objects (one for each URL found):</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[&lt;Selector xpath="//td[@class='mppcell']/a/@href" data='members_detail.do?locale=en&amp;ID=7085'&gt;, 
+ &lt;Selector xpath="//td[@class='mppcell']/a/@href" data='members_detail.do?locale=en&amp;ID=7275'&gt;,
+ ...]
+&gt;&gt;&gt;
+</code></pre></div></div>
+
+<p>Those objects are pointers to the different element in the scraped page (<code class="highlighter-rouge">href</code> attributes) as
+defined by our XPath query. To get to the actual content of those elements (the text of the URLs),
+we can use the <code class="highlighter-rouge">extract()</code> method. A variant of that method is <code class="highlighter-rouge">extract_first()</code> which does the
+same thing as <code class="highlighter-rouge">extract()</code> but only returns the first element if there are more than one:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; response.xpath("//td[@class='mppcell']/a/@href").extract_first()
+</code></pre></div></div>
+
+<p>returns</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>'members_detail.do?locale=en&amp;ID=7085'
+&gt;&gt;&gt; 
+</code></pre></div></div>
+
+<blockquote class="callout">
+  <h2 id="dealing-with-relative-urls">Dealing with relative URLs</h2>
+
+  <p>Looking at this result and at the source code of the page, we realize that the URLs are all
+<em>relative</em> to that page. They are all missing part of the URL to become <em>absolute</em> URLs, which
+we will need if we want to ask our spider to visit those URLs to scrape more data. We could
+prefix all those URLs with <code class="highlighter-rouge">http://www.ontla.on.ca/web/members/</code> to make them absolute, but
+since this is a common occurence when scraping web pages, Scrapy provides a built-in function
+to deal with this issue.</p>
+
+  <p>To try it out, still in the Scrapy shell, let’s first store the first returned URL into a
+variable:</p>
+
+  <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; testurl = response.xpath("//td[@class='mppcell']/a/@href").extract_first()
+</code></pre></div>  </div>
+
+  <p>Then, we can try passing it on to the <code class="highlighter-rouge">urljoin()</code> method:</p>
+
+  <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; response.urljoin(testurl)
+</code></pre></div>  </div>
+
+  <p>which returns</p>
+
+  <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>'http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085'
+</code></pre></div>  </div>
+
+  <p>We see that Scrapy was able to reconstruct the absolute URL by combining the URL of the current page context
+(the page in the <code class="highlighter-rouge">response</code> object) and the relative link we had stored in <code class="highlighter-rouge">testurl</code>.</p>
+
+</blockquote>
+
+<h2 id="extracting-urls-using-the-spider">Extracting URLs using the spider</h2>
+
+<p>Armed with the correct query, we can now update our spider accordingly. The <code class="highlighter-rouge">parse</code>
+methods returns the contents of the scraped page inside the <code class="highlighter-rouge">response</code> object. The <code class="highlighter-rouge">response</code>
+object supports a variety of methods to act on its contents:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">xpath()</code></td>
+      <td style="text-align: left">Returns a list of selectors, each of which points to the nodes selected by the XPath query given as argument</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">css()</code></td>
+      <td style="text-align: left">Works similarly to the <code class="highlighter-rouge">xpath()</code> method, but uses CSS expressions to select elements.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Those methods will return objects of a different type, called <code class="highlighter-rouge">selectors</code>. As their name implies,
+these objects are “pointers” to the elements we are looking for inside the scraped page. In order
+to get the “content” that the <code class="highlighter-rouge">selectors</code> are pointing to, the following methods should be used:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">extract()</code></td>
+      <td style="text-align: left">Returns the entire contents of the element(s) selected by the <code class="highlighter-rouge">selector</code> object, as a list of strings.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">extract_first()</code></td>
+      <td style="text-align: left">Returns the content of the first element selected by the <code class="highlighter-rouge">selector</code> object.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">re()</code></td>
+      <td style="text-align: left">Returns a list of unicode strings within the element(s) selected by the <code class="highlighter-rouge">selector</code> object by applying the regular expression given as argument.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">re_first()</code></td>
+      <td style="text-align: left">Returns the first match of the regular expression</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="callout">
+  <h2 id="know-when-to-use-extract">Know when to use <code class="highlighter-rouge">extract()</code></h2>
+  <p>The important thing to remember is that <code class="highlighter-rouge">xpath()</code> and <code class="highlighter-rouge">css()</code> return <code class="highlighter-rouge">selector</code> objects, on which it
+is then possible to apply the <code class="highlighter-rouge">xpath()</code> and <code class="highlighter-rouge">css()</code> methods a second time in order to further refine
+a query. Once you’ve reached the elements you’re interested in, you need to call <code class="highlighter-rouge">extract()</code> or
+<code class="highlighter-rouge">extract_first()</code> to get to their contents as string(s).</p>
+
+  <p>Whereas <code class="highlighter-rouge">re()</code> returns a list of strings, and therefore it is no longer possible to apply
+<code class="highlighter-rouge">xpath()</code> or <code class="highlighter-rouge">css()</code> to the results of <code class="highlighter-rouge">re()</code>. Since it returns a string, you don’t need to
+use <code class="highlighter-rouge">extract()</code> there.</p>
+
+</blockquote>
+
+<p>Since we have an XPath query we know will extract the URLs we are looking for, we can now use
+the <code class="highlighter-rouge">xpath()</code> method and update the spider accordingly:</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses"
+    allowed_domains = ["www.ontla.on.ca"]
+    start\_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        for url in response.xpath("//*[@class='mppcell']/a/@href").extract():
+            print(response.urljoin(url))
+</code></pre></div></div>
+
+<blockquote class="challenge">
+  <h2 id="looping-through-results">Looping through results</h2>
+
+  <p>Why are we using <code class="highlighter-rouge">extract()</code> instead of <code class="highlighter-rouge">extract_first()</code> in the code above?
+Why is the <code class="highlighter-rouge">print</code> statement inside a <code class="highlighter-rouge">for</code> clause?</p>
+  <blockquote class="solution">
+    <h2 id="solution-2">Solution</h2>
+
+    <p>We are not only interested in the first extracted URL but in all of them.
+<code class="highlighter-rouge">extract_first()</code> only returns the content of the first in a series of
+selected elements, while <code class="highlighter-rouge">extract()</code> will return all of them in the form of an
+array.</p>
+
+    <p>The <code class="highlighter-rouge">for</code> syntax allows us to loop through each of the returned elements one by one.</p>
+
+  </blockquote>
+</blockquote>
+
+<p>We can now run our new spider:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses
+</code></pre></div></div>
+
+<p>which produces a result similar to:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2017-02-26 23:06:10 [scrapy.utils.log] INFO: Scrapy 1.3.2 started (bot: ontariompps)
+(...)
+http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=2111
+http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=2139
+http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7174
+http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=2148
+(...)
+2017-02-26 23:06:11 [scrapy.core.engine] INFO: Spider closed (finished)
+</code></pre></div></div>
+
+<p>We can now pat ourselves on the back, as we have successfully completed the first stage
+of our project by successfully extracing all URLs leading to the minister profiles!</p>
+
+<blockquote class="callout">
+  <h2 id="limit-the-number-of-url-to-scrape-through-while-debugging">Limit the number of URL to scrape through while debugging</h2>
+
+  <p>We’ve seen by testing the code above that we are able to successfully gather all URLs from
+the list of MPPs. But while we’re working through to the final code that will allow us
+the extract the data we want from those pages, it’s probably a good idea to only run it
+on a handful of pages at a time.</p>
+
+  <p>This will not only run faster and allow us to iterate more quickly between different
+revisions of our code, it will also not burden the server too much while we’re debugging.
+This is probably not such an issue for a couple of hundred of pages, but it’s good
+practice, as it can make a difference for larger scraping projects. If you are planning
+to scrape a massive website with thousands of pages, it’s better to start small. Other
+visitors to that site will thank you for respecting their legitimate desire to access
+it while you’re debugging your scraper…</p>
+
+  <p>An easy way to limit the number of URLs we want to send our spider to is to
+take advantage of the fact that the <code class="highlighter-rouge">extract()</code> method returns a list of matching elements.
+In Python, lists can be <em>sliced</em> using the <code class="highlighter-rouge">list[start:end]</code> syntax and we can leave out
+either the <code class="highlighter-rouge">start</code> or <code class="highlighter-rouge">end</code> delimiters:</p>
+
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>list[start:end] # items from start through end-1
+list[start:]    # items from start through the rest of the array
+list[:end]      # items from the beginning through end-1
+list[:]         # all items
+</code></pre></div>  </div>
+
+  <p>We can therefore edit our spider thusly to only scrape the first five URLs:</p>
+
+  <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+   class MppaddressesSpider(scrapy.Spider):
+       name = "mppaddresses"
+       allowed_domains = ["www.ontla.on.ca"]
+       start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+       def parse(self, response):
+           for url in response.xpath("//*[@class='mppcell']/a/@href").extract()[:5]:
+               print(response.urljoin(url))
+</code></pre></div>  </div>
+
+  <p>Note that this only works if there are at least five URLs that are being returned, which
+is the case here.</p>
+
+</blockquote>
+
+<h2 id="recursive-scraping">Recursive scraping</h2>
+
+<p>Now that we were successful in harvesting the URLs to the detail pages, let’s begin by editing
+our spider to instruct it to visit those pages one by one.</p>
+
+<p>For this, let’s begin by defining a new method <code class="highlighter-rouge">get_details</code> that we want to run on the detail pages:</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses" # The name of this spider
+    
+    # The allowed domain and the URLs where the spider should start crawling:
+    allowed_domains = ["www.ontla.on.ca"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        # The main method of the spider. It scrapes the URL(s) specified in the
+        # 'start_url' argument above. The content of the scraped URL is passed on
+        # as the 'response' object.
+        
+        for url in response.xpath("//*[@class='mppcell']/a/@href").extract()[:5]:
+            # This loops through all the URLs found inside an element of class 'mppcell'
+			
+            # Constructs an absolute URL by combining the response’s URL with a possible relative URL:
+            full_url = response.urljoin(url)
+            print("Found URL: "+full_url)
+            
+            # The following tells Scrapy to scrape the URL in the 'full_url' variable
+            # and calls the 'get_details() method below with the content of this
+            # URL:
+            yield scrapy.Request(full_url, callback=self.get_details)
+    
+    def get_details(self, response):
+        # This method is called on by the 'parse' method above. It scrapes the URLs
+        # that have been extracted in the previous step.
+        print("Visited URL: "+response.url)
+</code></pre></div></div>
+
+<p>We’ve also added some comments to the code to make it easier to read and understand.</p>
+
+<p>If we now run our spider again:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses
+</code></pre></div></div>
+
+<p>We should see the result of our <code class="highlighter-rouge">print</code> statements intersped with the regular Scrapy
+debugging output, something like:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2017-02-27 20:39:42 [scrapy.utils.log] INFO: Scrapy 1.3.2 started (bot: ontariompps)
+(...)
+2017-02-27 20:39:43 [scrapy.core.engine] DEBUG: Crawled (200) &lt;GET http://www.ontla.on.ca/web/members/members_current.do?locale=en/&gt; (referer: None)
+Found URL: http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085
+Found URL: http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7275
+(...)
+2017-02-27 20:39:44 [scrapy.core.engine] DEBUG: Crawled (200) &lt;GET http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085&gt; (referer: http://www.ontla.on.ca/web/members/members_current.do?locale=en/)
+(...)
+Visited URL: http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085
+(...)
+2017-02-27 20:39:44 [scrapy.core.engine] DEBUG: Crawled (200) &lt;GET http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7086&gt; (referer: http://www.ontla.on.ca/web/members/members_current.do?locale=en/)
+(...)
+Visited URL: http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7225
+(...)
+2017-02-27 20:39:44 [scrapy.core.engine] INFO: Closing spider (finished)
+</code></pre></div></div>
+
+<p>We’ve truncated the results above to make it easier to read, but on your console
+you should see that all 5 URLs (remember, we are limiting the number of URLs to scrape
+for now) have been first “found” (by the <code class="highlighter-rouge">parse()</code> method) and then “visited”
+(by the <code class="highlighter-rouge">get_details()</code> method).</p>
+
+<blockquote class="callout">
+  <h2 id="asynchronous-requests">Asynchronous requests</h2>
+
+  <p>If you look closely at the output of the code we’ve just run, you might be surprised
+to see that the “Found URL” and “Visited URL” statements didn’t necessarily get
+printed out one after the other, as we might expect.</p>
+
+  <p>The reason this is so is that Scrapy requests are <a href="http://stackoverflow.com/questions/748175/asynchronous-vs-synchronous-execution-what-does-it-really-mean">scheduled and processed asynchronously</a>.
+This means that Scrapy doesn’t need to wait for a request to be finished and processed
+before it runs another or do other things in the meantime. This is more efficient
+than running each request one after the other, and it also allows for Scrapy to keep
+working away even if some requests fails for whatever reason.</p>
+
+  <p>This is especially advantageous when scraping large websites. Depending on the resources
+of the computer on which Scrapy runs, it can scrape hundreds or thousands of pages
+simultaneously.</p>
+
+  <p>If you want to know more, the Scrapy documentation
+<a href="https://doc.scrapy.org/en/latest/topics/architecture.html#topics-architecture">has a page detailing how the data flows between Scrapy’s components </a>.</p>
+
+</blockquote>
+
+<h2 id="scrape-the-detail-pages">Scrape the detail pages</h2>
+
+<p>Now that we are able to visit each one of the detail pages, we should work on getting the
+data that we want out of them. In our example, we are primarily looking
+to extract the following details:</p>
+
+<ul>
+  <li>Phone number(s)</li>
+  <li>Email address(es)</li>
+</ul>
+
+<p>Unfortunately, it looks like the content of those pages is not consistent. Sometimes, only
+one email address is displayed, sometimes more than one. Some MPPs have one Constituency
+address, others have more than one, etc.</p>
+
+<p>To simplify, we are going to stop at the first phone number and the first
+email address we find on those pages, although in a real life scenario we might be interested
+in writing more precise queries to make sure we are collecting the right information.</p>
+
+<blockquote class="challenge">
+  <h2 id="scrape-phone-number-and-email-address">Scrape phone number and email address</h2>
+  <p>Write XPath queries to scrape the first phone number and the first email address
+displayed on each of the detail pages that are linked from
+the <a href="http://www.ontla.on.ca/web/members/members_current.do?locale=en">Ontario MPPs list</a>.</p>
+
+  <p>Try out your queries on a handful of detail pages to make sure you are getting
+consistent results.</p>
+
+  <p>Tips:</p>
+
+  <ul>
+    <li>Look at the source code and try out XPath your queries until you find what
+you are looking for.</li>
+    <li>You can either use the browser console or the Scrapy shell mode (see above)
+to try out your queries.</li>
+    <li>The syntax for selecting an element like <code class="highlighter-rouge">&lt;div class="mytarget"&gt;</code> is <code class="highlighter-rouge">div[@class = 'mytarget']</code>.</li>
+    <li>The syntax to select the value of an attribute of the type <code class="highlighter-rouge">&lt;element attribute="value"&gt;</code>
+is <code class="highlighter-rouge">element/@attribute</code>.</li>
+  </ul>
+
+  <blockquote class="solution">
+    <h2 id="solution-3">Solution</h2>
+
+    <p>This returns an array of phone (and fax) numbers (using the Scrapy shell):</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy shell "http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085"
+&gt;&gt;&gt; response.xpath("//div[@class='phone']/text()").extract()
+</code></pre></div>    </div>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[['\n416-325-6200\n', '\n416-325-6195\n', '\n416-243-7984\n', '\n416-243-0327\n']
+</code></pre></div>    </div>
+
+    <p>And this returns an array of email addresses:</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; response.xpath("//div[@class='email']/a/text()").extract()
+</code></pre></div>    </div>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>['\nlalbanese.mpp@liberal.ola.org\n', '\nlalbanese.mpp.co@liberal.ola.org\n']
+</code></pre></div>    </div>
+
+  </blockquote>
+
+</blockquote>
+
+<blockquote class="challenge">
+  <h2 id="scraping-using-regular-expressions">Scraping using Regular Expressions</h2>
+  <p>In combination with XPath queries, it is also possible to use <a href="https://en.wikipedia.org/wiki/Regular_expression">Regular Expressions</a>
+to scrape the contents of a web page.</p>
+
+  <p>This is done by using the <code class="highlighter-rouge">re()</code> method. That method behaves a bit differently
+than the <code class="highlighter-rouge">xpath()</code> method in that it has to be applied on a <code class="highlighter-rouge">selector</code> object
+and returns an array of unicode strings (it is therefore not necessary to
+use <code class="highlighter-rouge">extract()</code> on its results).</p>
+
+  <p>Using the Scrapy shell, try writing a query that selects all phone numbers found on
+a politician’s detail page regardless of where they are located, using Regular Expressions.</p>
+
+  <p>You might find the <a href="https://regex101.com/">Regex 101</a> interactive Regular Expressions
+tester useful to get to the proper syntax.</p>
+
+  <p>Tips:</p>
+
+  <ul>
+    <li>We are looking for phone numbers following the North American syntax: ###-###-####</li>
+    <li><code class="highlighter-rouge">re()</code> expects a regular expression string which should be prefixed by <code class="highlighter-rouge">r</code> as in <code class="highlighter-rouge">re(r'Name:\s*(.*)')</code>.</li>
+    <li>Remember that <code class="highlighter-rouge">re()</code> is run on a <code class="highlighter-rouge">selector</code> object, so you can’t do <code class="highlighter-rouge">response.re(r'...')</code>. Instead you may
+want to try doing something like <code class="highlighter-rouge">response.xpath('//body').re(r'...')</code>.</li>
+  </ul>
+
+  <blockquote class="solution">
+    <h2 id="solution-4">Solution</h2>
+
+    <p>This returns an array of phone (and fax) numbers (using the Scrapy shell):</p>
+
+    <div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy shell "http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085"
+&gt;&gt;&gt; response.xpath('//body').re(r'\d{3}-\d{3}-\d{4}')
+</code></pre></div>    </div>
+
+    <div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>['416-325-6200', '416-325-6195', '416-243-7984', '416-243-0327']
+</code></pre></div>    </div>
+
+  </blockquote>
+
+</blockquote>
+
+<p>Once we have found XPath queries to run on the detail pages and are happy with the result,
+we can add them to the <code class="highlighter-rouge">get_details()</code> method of our spider:</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses" # The name of this spider
+    
+    # The allowed domain and the URLs where the spider should start crawling:
+    allowed_domains = ["www.ontla.on.ca"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        # The main method of the spider. It scrapes the URL(s) specified in the
+        # 'start_url' argument above. The content of the scraped URL is passed on
+        # as the 'response' object.
+        
+        for url in response.xpath("//*[@class='mppcell']/a/@href").extract()[:5]:
+            # This loops through all the URLs found inside an element of class 'mppcell'
+			
+            # Constructs an absolute URL by combining the response’s URL with a possible relative URL:
+            full_url = response.urljoin(url)
+            print("Found URL: "+full_url)
+            
+            # The following tells Scrapy to scrape the URL in the 'full_url' variable
+            # and calls the 'get_details() method below with the content of this
+            # URL:
+            yield scrapy.Request(full_url, callback=self.get_details)
+    
+    def get_details(self, response):
+        # This method is called on by the 'parse' method above. It scrapes the URLs
+        # that have been extracted in the previous step.
+        name_detail = response.xpath("normalize-space(//div[@class='mppdetails']/h1/text())").extract_first()
+        phone_detail = response.xpath("normalize-space(//div[@class='phone']/text())").extract_first()
+        email_detail = response.xpath("normalize-space(//div[@class='email']/a/text())").extract_first()
+        print("Found details: " + name_detail + ', ' + phone_detail + ', ' + email_detail)
+</code></pre></div></div>
+
+<p>Running our scraper again</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses
+</code></pre></div></div>
+
+<p>produces something like</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2017-02-27 20:39:42 [scrapy.utils.log] INFO: Scrapy 1.3.2 started (bot: ontariompps)
+(...)
+2017-02-27 20:39:43 [scrapy.core.engine] DEBUG: Crawled (200) &lt;GET http://www.ontla.on.ca/web/members/members_current.do?locale=en/&gt; (referer: None)
+Found URL: http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085
+Found URL: http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7275
+(...)
+Found details: Ted Arnott, MPP (Wellington—Halton Hills), 416-325-3880, ted.arnott@pc.ola.org
+Found details: Teresa J. Armstrong, MPP (London—Fanshawe), 416-325-1872, tarmstrong-qp@ndp.on.ca
+(...)
+2017-02-27 20:39:44 [scrapy.core.engine] INFO: Closing spider (finished)
+</code></pre></div></div>
+
+<p>We appear to be getting somewhere! The last step is doing something useful with the
+scraped data instead of printing it out on the terminal. Enter the Scrapy Items.</p>
+
+<h2 id="using-items-to-store-scraped-data">Using Items to store scraped data</h2>
+
+<p>Scrapy conveniently includes a mechanism to collect scraped data and output it
+in several different useful ways. It uses objects called <code class="highlighter-rouge">Items</code>. Those are akin
+to Python dictionaries in that each Item can contain one or more fields to
+store individual data element. Another way to put it is, if you visualize the
+data as a spreadsheet, each Item represents a row of data, and the fields within
+each item are columns.</p>
+
+<p>Before we can begin using Items, we need to define their structure. Using our editor,
+let’s navigate and edit the following file that Scrapy has created for us when we
+first created our project: <code class="highlighter-rouge">ontariompps/ontariompps/items.py</code></p>
+
+<p>Scrapy has pre-populated this file with an empty “OntariomppsItem” class:</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/items.py</code>)</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class OntariomppsItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    pass
+</code></pre></div></div>
+
+<p>Let’s add a few fields to store the data we aim to extract from the detail pages
+for each politician:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+
+class OntariomppsItem(scrapy.Item):
+    # define the fields for your item here like:
+    name = scrapy.Field()
+    phone = scrapy.Field()
+    email = scrapy.Field()
+</code></pre></div></div>
+
+<p>Then save this file. We can then edit our spider one more time:</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+from ontariompps.items import OntariomppsItem # We need this so that Python knows about the item object
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses" # The name of this spider
+    
+    # The allowed domain and the URLs where the spider should start crawling:
+    allowed_domains = ["www.ontla.on.ca"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        # The main method of the spider. It scrapes the URL(s) specified in the
+        # 'start_url' argument above. The content of the scraped URL is passed on
+        # as the 'response' object.
+		
+        for url in response.xpath("//*[@class='mppcell']/a/@href").extract()[:5]:
+            # This loops through all the URLs found inside an element of class 'mppcell'
+            
+            # Constructs an absolute URL by combining the response’s URL with a possible relative URL:
+            full_url = response.urljoin(url)
+            print("Found URL: "+full_url)
+			
+            # The following tells Scrapy to scrape the URL in the 'full_url' variable
+            # and calls the 'get_details() method below with the content of this
+            # URL:
+            yield scrapy.Request(full_url, callback=self.get_details)
+    
+    def get_details(self, response):
+        # This method is called on by the 'parse' method above. It scrapes the URLs
+        # that have been extracted in the previous step.
+        
+        item = OntariomppsItem() # Creating a new Item object
+        # Store scraped data into that item:
+        item['name'] = response.xpath("normalize-space(//div[@class='mppdetails']/h1/text())").extract_first()
+        item['phone'] = response.xpath("normalize-space(//div[@class='phone']/text())").extract_first()
+        item['email'] = response.xpath("normalize-space(//div[@class='email']/a/text())").extract_first()
+	    
+        # Return that item to the main spider method:
+        yield item
+
+</code></pre></div></div>
+
+<p>We made two significant changes to the file above:</p>
+<ul>
+  <li>We’ve included the line <code class="highlighter-rouge">from ontariompps.items import OntariomppsItem</code> at the top. This is required
+so that our spider knows about the <code class="highlighter-rouge">OntariomppsItem</code> object we’ve just defined.</li>
+  <li>We’ve also replaced the <code class="highlighter-rouge">print</code> statements in <code class="highlighter-rouge">get_details()</code> with the creation of an <code class="highlighter-rouge">OntariomppsItem</code>
+object, in which fields we are now storing the scraped data. The item is then passed back to the
+main spider method using the <code class="highlighter-rouge">yield</code> statement.</li>
+</ul>
+
+<p>If we now run our spider again:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses
+</code></pre></div></div>
+
+<p>we see something like</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2017-02-27 21:53:52 [scrapy.utils.log] INFO: Scrapy 1.3.2 started (bot: ontariompps)
+(...)
+2017-02-27 21:53:54 [scrapy.core.scraper] DEBUG: Scraped from &lt;200 http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085&gt;
+{'email': 'lalbanese.mpp@liberal.ola.org',
+ 'name': 'Hon Laura Albanese, MPP (York South—Weston)',
+ 'phone': '416-325-6200'}
+2017-02-27 21:53:54 [scrapy.core.scraper] DEBUG: Scraped from &lt;200 http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7183&gt;
+{'email': 'tarmstrong-qp@ndp.on.ca',
+ 'name': 'Teresa J. Armstrong, MPP (London—Fanshawe)',
+ 'phone': '416-325-1872'}
+(...)
+2017-02-27 21:53:54 [scrapy.core.engine] INFO: Spider closed (finished)
+</code></pre></div></div>
+
+<p>We see that Scrapy is dumping the contents of the items within the debugging output using
+a syntax that looks a lot like JSON.</p>
+
+<p>But let’s now try running the spider with an extra <code class="highlighter-rouge">-o</code> (‘o’ for ‘output’) argument that
+specifies the name of an output file with a <code class="highlighter-rouge">.csv</code> file extension:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses -o output.csv
+</code></pre></div></div>
+
+<p>This produces similar debugging output as the previous run, but now let’s look inside the
+directory in which we just ran Scrapy and we’ll see that it has created a file called
+<code class="highlighter-rouge">output.csv</code>, and when we try looking inside that file, we see that it contains the
+scraped data, conveniently arranged using the Comma-Separated Values (CSV) format, ready
+to be imported into our favourite spreadsheet!</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat output.csv
+</code></pre></div></div>
+
+<p>Returns</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>email,name,phone
+bob.bailey@pc.ola.org,"Robert Bailey, MPP (Sarnia—Lambton)",416-325-1715
+ganderson.mpp.co@liberal.ola.org,"Granville Anderson, MPP (Durham)",416-325-5494
+ted.arnott@pc.ola.org,"Ted Arnott, MPP (Wellington—Halton Hills)",416-325-3880
+lalbanese.mpp@liberal.ola.org,"Hon Laura Albanese, MPP (York South—Weston)",416-325-6200
+tarmstrong-qp@ndp.on.ca,"Teresa J. Armstrong, MPP (London—Fanshawe)",416-325-1872
+</code></pre></div></div>
+
+<p>By changing the file extension to <code class="highlighter-rouge">.json</code> or <code class="highlighter-rouge">.xml</code> we can output the same data
+in JSON or XML format.
+Refer to the <a href="http://doc.scrapy.org/en/latest/topics/feed-exports.html#topics-feed-exports">Scrapy documentation</a>
+for a full list of supported formats.</p>
+
+<p>Now that everything looks to be in place, we can finally remove our limit to the number
+of scraped elements…</p>
+
+<p>(editing <code class="highlighter-rouge">ontariompps/ontariompps/spiders/mppaddresses.py</code>)</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import scrapy
+from ontariompps.items import OntariomppsItem # We need this so that Python knows about the item object
+
+class MppaddressesSpider(scrapy.Spider):
+    name = "mppaddresses" # The name of this spider
+    
+    # The allowed domain and the URLs where the spider should start crawling:
+    allowed_domains = ["www.ontla.on.ca"]
+    start_urls = ['http://www.ontla.on.ca/web/members/members_current.do?locale=en/']
+
+    def parse(self, response):
+        # The main method of the spider. It scrapes the URL(s) specified in the
+        # 'start_url' argument above. The content of the scraped URL is passed on
+        # as the 'response' object.
+        for url in response.xpath("//*[@class='mppcell']/a/@href").extract():
+            # This loops through all the URLs found inside an element of class 'mppcell'
+            
+            # Constructs an absolute URL by combining the response’s URL with a possible relative URL:
+            full_url = response.urljoin(url)
+            print("Found URL: "+full_url)
+            
+            # The following tells Scrapy to scrape the URL in the 'full_url' variable
+            # and calls the 'get_details() method below with the content of this
+            # URL:
+            yield scrapy.Request(full_url, callback=self.get_details)
+    
+    def get_details(self, response):
+        # This method is called on by the 'parse' method above. It scrapes the URLs
+        # that have been extracted in the previous step.
+        
+        item = OntariomppsItem() # Creating a new Item object
+        # Store scraped data into that item:
+        item['name'] = response.xpath("normalize-space(//div[@class='mppdetails']/h1/text())").extract_first()
+        item['phone'] = response.xpath("normalize-space(//div[@class='phone']/text())").extract_first()
+        item['email'] = response.xpath("normalize-space(//div[@class='email']/a/text())").extract_first()
+	    
+        # Return that item to the main spider method:
+        yield item
+</code></pre></div></div>
+
+<p>(we’ve removed the <code class="highlighter-rouge">[:5]</code> at the end of the for loop on line 16 of the above code)</p>
+
+<p>… and run our spider one last time:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scrapy crawl mppaddresses -o mppaddresses.csv
+</code></pre></div></div>
+
+<blockquote class="challenge">
+  <h2 id="add-other-data-elements-to-the-spider">Add other data elements to the spider</h2>
+
+  <p>Try modifying the spider code to add more data extracted from the MPP detail page.
+Remember to edit the Item definition to allow for all extracted fields to be taken
+care of.</p>
+
+</blockquote>
+
+<p>You are now ready to write your own spiders!</p>
+
+<h1 id="reference">Reference</h1>
+
+<ul>
+  <li><a href="https://doc.scrapy.org/en/latest/index.html">Scrapy documentation</a></li>
+</ul>
+
+:ET

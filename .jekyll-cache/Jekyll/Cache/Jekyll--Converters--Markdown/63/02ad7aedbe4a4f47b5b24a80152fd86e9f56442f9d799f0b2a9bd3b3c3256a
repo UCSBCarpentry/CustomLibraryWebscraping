@@ -1,0 +1,121 @@
+I"<p>questions:</p>
+<ul>
+  <li>“How can use the results of one scraper (e.g. a list of URLs) as input for a second one?”
+objectives:</li>
+  <li>“Introduce the import.io web service.”</li>
+  <li>“Use import.io to chain scrapers.”</li>
+  <li>“Schedule scrapers to run automatically”
+keypoints:</li>
+  <li>“It is possible to use a list of URLs scraped from one page to scrape data on each of the URLs.”</li>
+  <li>“Web-based scrapers such as import.io allow scrapes to be scheduled.”</li>
+</ul>
+
+<p>FIXME - Finish write up of this section.</p>
+
+<p>Going back to the Ontario MPP example.</p>
+
+<p>So we have a list of MPPs, which each have an URL to a detail page.
+What if we want a spreadsheet that includes some of the information from that detail page.</p>
+
+<p>We can write a first scraper to get the URLs (we did so before)
+Then a second one for the detailed information.</p>
+
+<p>Scraper cannot do that. We need to use a bit more advanced tools.</p>
+
+<p><a href="http://import.io">import.io</a> is a fairly powerful web-based scraping tool that has a nice
+graphical interface to define what elements to scrape from a page.</p>
+
+<p>They have a number of plans, the free one allows users to scrape up to 500 URLs per month.</p>
+
+<h2 id="step-1-scrape-a-list-of-urls">Step 1: Scrape a list of URLs</h2>
+
+<p>Once we have logged in to import.io, we can create a new scraper in minutes. Let’s add one
+on the <a href="http://www.ontla.on.ca/web/members/members_current.do?locale=en">Ontario MPPs list</a>
+URL. After a short while, an interface pops with the data that import.io thinks we are
+interested in scraping. We can toggle from that list view to an overlay of the original
+web page that allows us to graphically select the data to scrape:</p>
+
+<p><img src="../fig/importio-ontparl-01.png" alt="Screenshot of import.io scraping Ontario MPP list" /></p>
+
+<p>We can see that the MPP name has been captured, including the hyperlink to the detailed page.
+This is nice for on-screen display, but if we want to reuse that URL, we need it to be
+in its own column.</p>
+
+<p>Let’s add another column and select the MPP name again, making sure to capture the underlying
+HTML (including the hyperlink). Then, in the “Data” tab, we can select the “Output HTML”
+for that new column to see the unformatted data that is being scraped. To further extract only the
+URL, we have to use a Regular Expression on that column:</p>
+
+<p><img src="../fig/importio-ontparl-02.png" alt="Using a regular expression on import.io" /></p>
+
+<p>The expression</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>href="(.*)"
+</code></pre></div></div>
+
+<p>matches everything that is between the double quotes following the <code class="highlighter-rouge">href</code> keyword. It is
+stored into a temporary variable called <code class="highlighter-rouge">$1</code> which we can reuse on the next line to
+output the desired data.</p>
+
+<p>Remembering that the URLs on that page are relative to the list page, we further need to
+concatenate <code class="highlighter-rouge">http://www.ontla.on.ca/web/members/</code> in front of the scraped URLs to
+get absolute URLs. The resulting expression is</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://www.ontla.on.ca/web/members/$1
+</code></pre></div></div>
+
+<p>We are now ready to try out our scraper. This is done by clicking on the red “Run URLs” button.
+Once the scraper has run, we can preview the results directly in the browser:</p>
+
+<p><img src="../fig/importio-ontparl-03.png" alt="Previewing the results of a scrape on import.io" /></p>
+
+<p>The data can also be downloaded in JSON or CSV format for reuse.</p>
+
+<h2 id="step-2-scrape-data-on-the-detail-view-pages">Step 2: Scrape data on the detail view pages</h2>
+
+<p>OK now for the 2nd step</p>
+
+<p>We want to use those URLs to harvest data from pages like http://www.ontla.on.ca/web/members/members_detail.do?locale=en&amp;ID=7085</p>
+
+<p>Let’s create a second import.io scraper using that URL</p>
+
+<p>Select the data we are interested in. Say, the email address, the current title, the political party.</p>
+
+<p>Might work for one, what about others? Can we be sure the data is at the same place?</p>
+
+<p>Let’s try it out. import.io allows us to run a scraper on multiple URLs. Let’s put 2-3 in that box.</p>
+
+<p>Run, preview.</p>
+
+<p>We see that some data has not been captured correctly.</p>
+
+<p>Let’s investigate.</p>
+
+<p>Show source / inspect. Use XPath to query elements</p>
+
+<p>Email:</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//div[@class='mppcontact']//div[@class='email']")
+</code></pre></div></div>
+
+<p><img src="../fig/importio-ontparl-04.png" alt="Selecting data to scrape on import.io" /></p>
+
+<p>Party:</p>
+
+<p>It’s actually after the second H2 element.</p>
+
+<div class="source highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$x("//div[@class='mppinfoblock']/h2[2]/following-sibling::p")
+</code></pre></div></div>
+
+<p><img src="../fig/importio-ontparl-05.png" alt="Selecting data to scrape on import.io" /></p>
+
+<p>Try it out on multiple URLs. Once we are confident, we can chain scrapers.</p>
+
+<p><img src="../fig/importio-ontparl-06.png" alt="Selecting data to scrape on import.io" /></p>
+
+<p>Use the output of one scraper to drive the other:</p>
+
+<p><img src="../fig/importio-ontparl-07.png" alt="Selecting data to scrape on import.io" /></p>
+
+<p><img src="../fig/importio-ontparl-08.png" alt="Selecting data to scrape on import.io" /></p>
+:ET
