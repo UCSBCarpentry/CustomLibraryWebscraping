@@ -138,41 +138,53 @@ You should get this path:
 
 Note that you only have to specify in the expression things that are not included in the original XPath automatically created by Scaper. Compare the two and see how we can express the path to Scraper. 
 
-<challenge Question:  In this case, either of the following paths would work. Do you know why?: >
-
-<code
-./div[1]/span
-./div/span
-code>
-
-Alternatively, you can also get it right if you use:
-
-<code
-./div/span/a 
-./div[1]/span/a
+> ## Why do both these Xpaths work?
+> Question:  In this case, either of the following paths would work. Do you know why?: 
+> 
+> ```
+> ./div[1]/span
+> ./div/span
+> ```
 >
+> Alternatively, you can also get it right if you use:
+>
+> ~~~
+> ./div/span/a 
+> ./div[1]/span/a
+> ~~~
+>
+>
+> > ## solution
+> > In the first case telling that the element in the first node of that particular div is consistent throughout other names on the website. Omitting it won’t change the outcome, as you are describing that you are interested in the content of that div child node. 
+> > If you provide the path with the extra `/a` you are telling Scraper to get the information that is in another child node, which happens to also include the faculty name, linking to a bio webpage. Again, including `[1]` or not does not change the outcome. 
+> >
+> >![Jewish Studies Scraper with 4 paths leading to the same result]({{ page.root }}/fig/Image8.png)
+> {: .solution}
+{: .challenge}
 
 
-< solution Answer: 
-In the first case telling that the element in the first node of that particular div is consistent throughout other names on the website. Omitting it won’t change the outcome, as you are describing that you are interested in the content of that div child node. 
-If you provide the path with the extra /a you are telling Scraper to get the information that is in another child node, which happens to also include the faculty name, linking to a bio webpage. Again, including [1] or not does not change the outcome. >
-<Image 8 Jewish Studies Scraper with 4 paths leading to the same result>
 
 
-<challenge Exercise: >
 
-Now that you have learned how to get the right path to create columns for names, follow the same steps to get the three other columns Emails, Position, and Office Location.
-
-
-After completing all steps you should have the following output:
-
-<Image  9Jewish Studies Scraper with final exercise completed>
-
-<Solution:
-./div[4]/div[1]/div/a (Email)
-./div[2]/div[2]/div/d (Position)
-./div[4]/div[3]/div/d (Office)>
-
+> ## Scrape Three Columns
+>
+> Now that you have learned how to get the right path to create columns for names, follow the same steps to get the three other columns Emails, Position, and Office Location.
+>
+>
+>
+> After completing all steps you should have the following output:
+>
+> ![Screenshot of the Scraper]({{ page.root }}/fig/Image9.png)
+>
+> > ## Solution
+> > 
+> > ~~~
+> > ./div[4]/div[1]/div/a (Email)
+> > ./div[2]/div[2]/div/d (Position)
+> > ./div[4]/div[3]/div/d (Office)>
+> > ~~~
+> {: .solution}
+{: .challenge}
 
 
 
