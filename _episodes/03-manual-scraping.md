@@ -98,28 +98,30 @@ You should have the path bellow or something slightly different if you have sele
 {: .callout}
  
  
-Challenge: Scrape Emails
-Which path would you have to provide to Scraper to get the emails in one column?
+> ## Challenge: Scrape Emails
+> Which path would you have to provide to Scraper to get the emails in one column?
 
 Answer:
 You should get a column with emails with the following path expression after hitting scrape
 ./td[4]/a
  
 <output?>
-Note that Scraper gave you a starting path based on what you have scraped //tr[td], so you have only to add the continuation of it. In order to tell Scraper extension we are only interested in the emails, we will have to indicate the data that is in the fourth column and add the specific path to the email address. Don’t forget the dot (.) in the beginning of the Xpath expression. As we have learned in the previous lesson that is how you tell the path is in the current context node.
+
+Note that Scraper gave you a starting path based on what you have scraped `//tr[td]`, so you have only to add the continuation of it. In order to tell Scraper extension we are only interested in the emails, we will have to indicate the data that is in the fourth column and add the specific path to the email address. Don’t forget the dot (.) in the beginning of the Xpath expression. As we have learned in the previous lesson that is how you tell the path is in the current context node.
 
 You can remove the contact row now and copy the output to the clipboard. 
+{: .challenge}
+
+## Let's scrape a different site.
 
 
-<header HOW TO DIVIDE THE DIFFERENT EXAMPLES - SECTION? >
+Now let’s turn to the Jewish Studies faculty webpage [www.jewishstudies.ucsb.edu/people](https://www.jewishstudies.ucsb.edu/people) for practicing XPath queries a little bit more.
+
+Note that the profiles on the Jewish Studies facultly page are laid out differently that the East Asian Studies faculty page. On the Jewish Studies page the information is not displayed in well-defined rows. So, when we scrape the web page data, we should get one row per faculty with one string of data.
 
 
-Now let’s turn to the Jewish Studies faculty webpage <link (https://www.jewishstudies.ucsb.edu/people) > for practicing XPath queries a little bit more. Note that differently from the profiles in the previous webpage, here the information is not displayed in well-defined rows. So, when we scrape the web page data, we should get one row per faculty with one string of data.
 
-
-<Image 5 Jewish Studies website>
 ![Jewish Studies website]({{ page.root }}/fig/Image5.png)
-<Image 6 Scraper Jewish studies> 
 ![Scraper Jewish studies]({{ page.root }}/fig/Image6.png)
 
 If we want to have this data in a more reusable format, we will have to create columns indicating the exact path we want to scrape the data from, considering that these paths will be a continuation of the one highlighted in the image above. 
@@ -142,8 +144,9 @@ In the developer tools window select the  html element containing the faculty na
 You should get this path: 
 
 ~~~
- //*[@id="block-system-main"]/div/div/div/div/section[1]/div/div/div/div/div[1]/div[1]/span 
+//*[@id="block-system-main"]/div/div/div/div/section[1]/div/div/div/div/div[1]/div[1]/span 
 ~~~
+{: .output}
 
 
 
