@@ -118,18 +118,26 @@ Now let’s turn to the Jewish Studies faculty webpage <link (https://www.jewish
 
 
 <Image 5 Jewish Studies website>
+![Jewish Studies website]({{ page.root }}/fig/Image5.png)
 <Image 6 Scraper Jewish studies> 
+![Scraper Jewish studies]({{ page.root }}/fig/Image6.png)
 
 If we want to have this data in a more reusable format, we will have to create columns indicating the exact path we want to scrape the data from, considering that these paths will be a continuation of the one highlighted in the image above. 
 
-For this particular case, we want to have four columns: 1) Name, 2) Email, 3) Position, and 4) Office Location. Using the function to inspect where the element is located on the webpage, identify the correct paths, and scrape the information we need. 
+For this particular case, we want to have four columns: 
 
-For the first column “Name” we will have to inspect where the name is located to get the right path to it. Select one of the Faculty names > right-click > inspect. It will prompt the developer window as indicated below:
+| 1. Name | 2. Email | 3. Position| 4. Office Location. |
+
+Using the function to inspect where the element is located on the webpage, identify the correct paths, and scrape the information we need. 
+
+For the first column __"Name"__ we will have to inspect where the name is located to get the right path to it. 
+
+Select one of the Faculty names > right-click > inspect. It will open the developer window as indicated below:
 
 
-<Image 7 Jewish Studies with developer window>
+![Jewish Studies with developer window]({{ page.root }}/fig/Image7.png)
 
-Look for the name element by navigating the div carrot, right-click, then choose Copy Xpath. 
+In the developer tools window select the  html element containing the faculty name, right-click, then choose Copy Xpath. 
  
 You should get this path: 
 
