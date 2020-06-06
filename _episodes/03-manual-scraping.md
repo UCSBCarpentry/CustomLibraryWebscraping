@@ -22,27 +22,28 @@ Now we are finally ready to do some web scraping. For this lesson, we will be us
 First, let’s focus our attention on the East Asian Languages and Cultural Studies webpage [https://www.eastasian.ucsb.edu/people/faculty/](https://www.eastasian.ucsb.edu/people/faculty/). 
 
 We are interested in downloading the list of faculty names and their email addresses.
-<Image 1 East asian website>
+![East Asian Studies website]({{ page.root }}/fig/Image1.png)
 	
 ## Scrape similar 
 With the extension installed, we can select the first row in the faculty list, do a right-click and choose “Scrape similar” from the contextual menu. 
 
-<Image 2 East asian website/scrape>
+![East Asian Studies website/scrape]({{ page.root }}/fig/Image2.png)
  
 You can select the picture as well. Make sure you do not right-click on a hyperlinked text. 
 Alternatively, the “Scrape similar” option can also be accessed from the Scraper extension icon:
  
-<Image 3 Scraper web browser>
+![Scraper Web Browser]({{ page.root }}/fig/Image3.png)
  
 Either operation will bring up the Scraper window:
 
-<Image 4 Scraper Asian studies with blue and red rectangles>
+![Scraper web browser with red and blue boxes]({{ page.root }}/fig/Image4.png)
  
 We can notice that Scraper has generated XPath queries that correspond to the data we had selected upon calling it. The Selector (highlighted in blue in the above screenshot) has been set to //tr[td] which selects all the rows of the table, delimiting the data we want to extract.
 In fact, we can try out that query using the technique that we learned in the previous section by typing the following in the browser console:
 
 ~~~
-Tip: Use the following shortcuts to Open Console: Panel Mac (Command+Option+J) Windows/Linux (Control+Shift+J). 
+#Tip: Use the following shortcuts to Open Console: 
+Panel Mac (Command+Option+J) Windows/Linux (Control+Shift+J). 
 Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
 ``` $x("//tr[td]")```
 ~~~
@@ -50,7 +51,7 @@ Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a
 
 The query will return something like:
 ~~~
-output <- (48)
+<- (48)
 ~~~
 {: .output}
 
