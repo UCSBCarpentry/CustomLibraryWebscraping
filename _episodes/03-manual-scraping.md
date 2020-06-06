@@ -92,14 +92,14 @@ Note that we still have other info such as office location and times along with 
 Let’s inspect the link to identify on the developer’s console the exact path for the email addresses. Select the email > right-click (make sure to not click in the email) > Inspect. Then, hover the mouse over the email > right-click > copy > copy Xpath. Note that there will be an option to copy the Full path but you do not need that as we have already scrapped from a portion of the website.
 
 > ## Tip:
-> You can copy the path to a notepad, it will help you to compare it with scrap and understand better where the element you are interested in is located. 
-You should have the path bellow or something slightly different if you have selected other faculty email as the tr 
->[row number] will represent the data you have selected:
->
->~~~
->//*[@id="site-main"]/div/div/div[2]/div/table/tbody/tr[1]/td[4]/a 
->~~~
->{: .source}
+> You can copy the path to a notepad, it will help you to compare it with scrap and understand better 
+> where the element you are interested in is located. 
+> You should have the path bellow or something slightly different if you have selected other faculty 
+> email as the <tr> [row number] will represent the data you have selected:
+>> ~~~
+>> //*[@id="site-main"]/div/div/div[2]/div/table/tbody/tr[1]/td[4]/a 
+>> ~~~
+> {: .source}
 {: .callout}
  
  
@@ -109,16 +109,18 @@ You should have the path bellow or something slightly different if you have sele
 >> ## Solution
 >>You should get a column with emails with the following path expression after hitting scrape
 >>~~~
-./td[4]/a
+>>./td[4]/a
 >>~~~
 >>{: .output}
->{: .solution}
+>> Note that Scraper gave you a starting path based on what you have scraped `//tr[td]`, so you have 
+>> only to add the continuation of it. In order to tell Scraper extension we are only interested in the 
+>> emails, we will have to indicate the data that is in the fourth column and add the specific path to 
+>> the email address. Don’t forget the dot (.) in the beginning of the Xpath expression. As we have 
+>> learned in the previous lesson that is how you tell the path is in the current context node.
+>>
+>> You can remove the contact row now and copy the output to the clipboard. 
+> {: .solution}
 {: .challenge} 
-
-Note that Scraper gave you a starting path based on what you have scraped `//tr[td]`, so you have only to add the continuation of it. In order to tell Scraper extension we are only interested in the emails, we will have to indicate the data that is in the fourth column and add the specific path to the email address. Don’t forget the dot (.) in the beginning of the Xpath expression. As we have learned in the previous lesson that is how you tell the path is in the current context node.
-
-You can remove the contact row now and copy the output to the clipboard. 
-{: .challenge}
 
 ## Let's scrape a different site.
 
