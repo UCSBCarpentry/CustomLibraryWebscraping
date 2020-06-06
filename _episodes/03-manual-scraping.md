@@ -19,7 +19,9 @@ keypoints:
 # Using the Scraper Chrome extension
 
 Now we are finally ready to do some web scraping. For this lesson, we will be using two UCSB department webpages: East Asian Languages and Cultural Studies and Jewish Studies. We are interested in scrapping contact information from faculty within these departments with the help of Xpath and Scraper. To do so, we will use the Scraper extension in the Chrome browser (refer to the [Setup](FIXME) section for help installing these tools).
-First, let’s focus our attention on the East Asian Languages and Cultural Studies webpage [https://www.eastasian.ucsb.edu/people/faculty/](https://www.eastasian.ucsb.edu/people/faculty/). We are interested in downloading the list of faculty names and their email addresses.
+First, let’s focus our attention on the East Asian Languages and Cultural Studies webpage [https://www.eastasian.ucsb.edu/people/faculty/](https://www.eastasian.ucsb.edu/people/faculty/). 
+
+We are interested in downloading the list of faculty names and their email addresses.
 <Image 1 East asian website>
 	
 ## Scrape similar 
@@ -172,7 +174,7 @@ Note that you only have to specify in the expression things that are not include
 >
 >
 >
-> After completing all steps you should have the following output:
+> After completing all steps you should get the following output:
 >
 > ![Screenshot of the Scraper]({{ page.root }}/fig/Image9.png)
 >
