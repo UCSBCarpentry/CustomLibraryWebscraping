@@ -48,13 +48,15 @@ In fact, we can try out that query using the technique that we learned in the pr
 >Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
 {: .callout}
 
-> 
->$x("//tr[td]")
-{: .code}
+~~~
+$x("//tr[td]")
+~~~
+{: .source}
 
 The above query will return something like:
-
-><- (48)
+~~~
+<- (48)
+~~~
 {: .output}
 
 Which we can explore in the console and check for highlights to make sure this is the right data.
@@ -103,12 +105,15 @@ You should have the path bellow or something slightly different if you have sele
  
 > ## Challenge: Scrape Emails
 > Which path would you have to provide to Scraper to get the emails in one column?
-
-Answer:
-You should get a column with emails with the following path expression after hitting scrape
+>
+>> ## Solution
+>>You should get a column with emails with the following path expression after hitting scrape
+>>~~~
 ./td[4]/a
- 
-<output?>
+>>~~~
+>>{: .output}
+>{: .solution}
+{: .challenge} 
 
 Note that Scraper gave you a starting path based on what you have scraped `//tr[td]`, so you have only to add the continuation of it. In order to tell Scraper extension we are only interested in the emails, we will have to indicate the data that is in the fourth column and add the specific path to the email address. Don’t forget the dot (.) in the beginning of the Xpath expression. As we have learned in the previous lesson that is how you tell the path is in the current context node.
 
