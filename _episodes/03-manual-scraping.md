@@ -48,15 +48,13 @@ In fact, we can try out that query using the technique that we learned in the pr
 >Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
 {: .callout}
 
-~~~
-$x("//tr[td]")
-~~~
+> 
+>$x("//tr[td]")
 {: .code}
 
 The above query will return something like:
-~~~
-<- (48)
-~~~
+
+><- (48)
 {: .output}
 
 Which we can explore in the console and check for highlights to make sure this is the right data.
