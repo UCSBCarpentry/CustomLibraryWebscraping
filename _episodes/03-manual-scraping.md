@@ -136,11 +136,24 @@ Look for the name element by navigating the div carrot, right-click, then choose
  
 You should get this path: 
 
-<code //*[@id="block-system-main"]/div/div/div/div/section[1]/div/div/div/div/div[1]/div[1]/span >
+~~~
+ //*[@id="block-system-main"]/div/div/div/div/section[1]/div/div/div/div/div[1]/div[1]/span 
+~~~
 
-Note that you only have to specify in the expression things that are not included in the original XPath automatically created by Scaper. Compare the two and see how we can express the path to Scraper. 
 
-> ## Why do both these Xpaths work?
+
+> ## Note 
+>
+> that you only have to specify in the expression things that are not included in the original XPath automatically created by Scaper. 
+> Compare the two and see how we can express the path to Scraper. 
+>
+> {: .source}
+{: .callout}
+
+
+
+
+> ## Challenge: Why do both these Xpaths work?
 > Question:  In this case, either of the following paths would work. Do you know why?: 
 > 
 > ```
@@ -165,10 +178,7 @@ Note that you only have to specify in the expression things that are not include
 {: .challenge}
 
 
-
-
-
-> ## Scrape Three Columns
+> ## Challenge: Scrape Three Columns
 >
 > Now that you have learned how to get the right path to create columns for names, follow the same steps to get the three other columns Emails, Position, and Office Location.
 >
