@@ -84,12 +84,11 @@ Sometimes, however, we do have to do a bit of work to get Scraper to select the 
 
 Note that we still have other info such as office location and times along with emails. So what if we want to get a column only with emails instead? We should add a new column and rename it as Email and use Xpath to help us to refine that. To add another column in Scraper, use the little green "+" icon in the columns list. 
 
-Let’s inspect the link to identify it on the developer’s console the exact path for the email addresses. Select the email > right-click (make sure to not click in the email) > Inspect. Then, hover the mouse over the email > right-click > copy > copy Xpath. Note that there will be an option to copy the Full path but you do not need that as we have already scrapped from a portion of the website.
+Let’s inspect the link to identify on the developer’s console the exact path for the email addresses. Select the email > right-click (make sure to not click in the email) > Inspect. Then, hover the mouse over the email > right-click > copy > copy Xpath. Note that there will be an option to copy the Full path but you do not need that as we have already scrapped from a portion of the website.
 
 > ## Tip:
-> You can copy the path to a notepad, it will help you to compare with scrap and understand better where the element you are
-> interested in is located. 
-> You should have the path bellow or something slightly different if you have selected other faculty email as the tr 
+> You can copy the path to a notepad, it will help you to compare it with scrap and understand better where the element you are interested in is located. 
+You should have the path bellow or something slightly different if you have selected other faculty email as the tr 
 >[row number] will represent the data you have selected:
 >
 >~~~
