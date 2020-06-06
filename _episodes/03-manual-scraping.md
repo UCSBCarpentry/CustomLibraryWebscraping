@@ -41,12 +41,11 @@ Either operation will bring up the Scraper window:
 We can notice that Scraper has generated XPath queries that correspond to the data we had selected upon calling it. The Selector (highlighted in blue in the above screenshot) has been set to //tr[td] which selects all the rows of the table, delimiting the data we want to extract.
 In fact, we can try out that query using the technique that we learned in the previous section by typing the following in the browser console:
 
-~~~
-#Tip: Use the following shortcuts to Open Console: 
-Panel Mac (Command+Option+J) Windows/Linux (Control+Shift+J). 
-Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
-``` $x("//tr[td]")```
-~~~
+> ## #Tip: Use the following shortcuts to Open Console:
+>
+> Panel Mac (Command+Option+J) Windows/Linux (Control+Shift+J). 
+>Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
+>``` $x("//tr[td]")```
 {: .callout}
 
 The query will return something like:
