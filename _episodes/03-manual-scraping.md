@@ -122,7 +122,7 @@ Let’s inspect the link to identify on the developer’s console the exact path
 > {: .solution}
 {: .challenge} 
 
-## Let's scrape a different site.
+## Let's scrape a different site
 
 
 Now let’s turn to the Jewish Studies faculty webpage [www.jewishstudies.ucsb.edu/people](https://www.jewishstudies.ucsb.edu/people) for practicing XPath queries a little bit more.
@@ -162,7 +162,7 @@ You should get this path:
 
 > ## Note 
 >
-> that you only have to specify in the expression things that are not included in the original XPath automatically created by Scaper. 
+> You only have to specify in the expression things that are not included in the original XPath automatically created by Scraper. 
 > Compare the two and see how we can express the path to Scraper. 
 >
 > {: .source}
@@ -189,7 +189,7 @@ You should get this path:
 >
 > > ## solution
 > > In the first case telling that the element in the first node of that particular div is consistent throughout other names on the website. Omitting it won’t change the outcome, as you are describing that you are interested in the content of that div child node. 
-> > If you provide the path with the extra `/a` you are telling Scraper to get the information that is in another child node, which happens to also include the faculty name, linking to a bio webpage. Again, including `[1]` or not does not change the outcome. 
+> > If you provide the path with the extra `/a` you are telling Scraper to get the information that is in another child node, which happens to also include the faculty name, linking it to a bio webpage. Again, including `[1]` or not does not change the outcome. 
 > >
 > >![Jewish Studies Scraper with 4 paths leading to the same result]({{ page.root }}/fig/Image8.png)
 > {: .solution}
