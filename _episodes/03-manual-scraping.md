@@ -25,12 +25,12 @@ We are interested in downloading the list of faculty names and their email addre
 ![East Asian Studies website]({{ page.root }}/fig/Image1.png)
 	
 ## Scrape similar 
-With the extension installed, we can select the first row in the faculty list, do a right-click and choose “Scrape similar” from the contextual menu. 
+With the extension installed, we can select the first row in the faculty list, do a right-click and choose "Scrape similar" from the contextual menu. 
 
 ![East Asian Studies website/scrape]({{ page.root }}/fig/Image2.png)
  
 You can select the picture as well. Make sure you do not right-click on a hyperlinked text. 
-Alternatively, the “Scrape similar” option can also be accessed from the Scraper extension icon:
+Alternatively, the "Scrape similar" option can also be accessed from the Scraper extension icon:
  
 ![Scraper Web Browser]({{ page.root }}/fig/Image3.png)
  
@@ -38,13 +38,15 @@ Either operation will bring up the Scraper window:
 
 ![Scraper web browser with red and blue boxes]({{ page.root }}/fig/Image4.png)
  
-We can notice that Scraper has generated XPath queries that correspond to the data we had selected upon calling it. The Selector (highlighted in blue in the above screenshot) has been set to //tr[td] which selects all the rows of the table, delimiting the data we want to extract.
+We can notice that Scraper has generated XPath queries that correspond to the data we had selected upon calling it. The Selector (highlighted in blue in the above screenshot) has been set to `//tr[td]` which selects all the rows of the table, delimiting the data we want to extract.
 In fact, we can try out that query using the technique that we learned in the previous section by typing the following in the browser console:
 
 > ## #Tip: Use the following shortcuts to Open Console Panel:
 >
->**Mac:** (Command+Option+J) 
->**Windows/Linux:** (Control+Shift+J). 
+> **Mac:** (Command+Option+J)
+>
+> **Windows/Linux:** (Control+Shift+J). 
+>
 >Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
 {: .callout}
 
@@ -63,7 +65,7 @@ Which we can explore in the console and check for highlights to make sure this i
 
 Could you guess why we got 48 as a result?
 
-There are 24 rows with faculty profiles, but in between them we had tr box shadows, if we unselect “Exclude empty results” which is set by default, we will get empty rows in our output. So it is wise to keep this option always selected.
+There are 24 rows with faculty profiles, but in between them we had tr box shadows, if we unselect "Exclude empty results" which is set by default, we will get empty rows in our output. So it is wise to keep this option always selected.
 
 Scraper also recognized that there were four columns in that table, and has accordingly created four such columns (highlighted in red in the screenshot), each with its own XPath selector, ```*[1]```, ```*[2]```, ```*[3]``` and ```*[4]```.
 
