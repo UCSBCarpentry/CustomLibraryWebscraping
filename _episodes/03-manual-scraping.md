@@ -220,3 +220,69 @@ You should get this path:
 
 
 
+<header 2 Concat Function>
+ 
+
+
+Let’s look at another XPath function called concat() that can be used to concatenate things, which basically joins two or more strings into one. If we want to scrape the names along the bio web pages for all faculty we have to scrape their names that link to the bio page.
+
+
+<Image 10 Scrapping bio pages with names>
+
+
+This extracts the URLs, but as luck would have it, those URLs are relative to the list page (i.e. they are missing (https://www.jewishstudies.ucsb.edu). 
+
+
+
+
+<Image 11 Scrape Results with incomplete URLs>
+
+
+
+
+We can create a new column and use the concat() XPath function to construct the full URLs to faculty bio pages, using the following expression:
+
+
+
+
+`concat('https://www.jewishstudies.ucsb.edu',@href)`
+
+
+Note that the XPath expression basically tells Scraper what should be placed before `@href`
+
+
+> ## Challenge:
+>
+>
+> Let's say you want to add automatically include `Dr.` before all faculty names, how would you do that using the `concat()` XPath function
+> 
+> > ## Solution
+> >
+> > `concat('Dr. ', .)`
+> >
+> >
+> > If you rename and reorder columns you should have this final output
+> >
+> > <Image 12 Output Challenge
+> {: .solution}
+{: .challenge}
+
+ 
+ ### Other free Chrome extensions to scrape data from websites:
+ 
+[Web Scraper](https://chrome.google.com/webstore/detail/web-scraper/jnhgnonknehpejjnehehllkliplmbmhn?hl=en)
+
+
+[Simple Scraper](https://chrome.google.com/webstore/detail/simple-scraper-%E2%81%A0%E2%80%94-scrape/lnddbhdmiciimpkbilgpklcglkdegdkg)
+
+
+[Grepsr](https://chrome.google.com/webstore/detail/grepsr-web-scraping-tool/hjdijkhlfpeafghibmiabeofkiicdnjm)
+
+
+[Grabbly](https://chrome.google.com/webstore/detail/grabbly/acmmehmidcnncgbigblfkgmbmeijgefl?hl=en)
+
+[a]There is an option to export to Google Docs but I have note set up this yet
+
+
+OAuth2 request failed: Service responded with error: 'Service has been disabled for this account.'
+
