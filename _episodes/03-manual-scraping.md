@@ -220,23 +220,22 @@ You should get this path:
 
 
 
-<header 2 Concat Function>
+## Concat Function
  
 
 
 Let’s look at another XPath function called concat() that can be used to concatenate things, which basically joins two or more strings into one. If we want to scrape the names along the bio web pages for all faculty we have to scrape their names that link to the bio page.
 
 
-<Image 10 Scrapping bio pages with names>
+![Scrapping bio pages with names]({{ page.root }}/fig/Image10.png)
 
 
-This extracts the URLs, but as luck would have it, those URLs are relative to the list page (i.e. they are missing (https://www.jewishstudies.ucsb.edu). 
+This extracts the URLs, but as luck would have it, those URLs are relative to the list page (i.e. they are missing `https://www.jewishstudies.ucsb.edu`). 
 
 
 
 
-<Image 11 Scrape Results with incomplete URLs>
-
+![Image 11 Scrape Results with incomplete URLs]({{ page.root }}/fig/Image11.png)
 
 
 
@@ -263,7 +262,7 @@ Note that the XPath expression basically tells Scraper what should be placed bef
 > >
 > > If you rename and reorder columns you should have this final output
 > >
-> > <Image 12 Output Challenge
+> > <![Concat Output Challenge]({{ page.root }}/fig/Image11.png)
 > {: .solution}
 {: .challenge}
 
