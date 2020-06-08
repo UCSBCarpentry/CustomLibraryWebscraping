@@ -250,7 +250,7 @@ We can create a new column and use the concat() XPath function to construct the 
 Note that the XPath expression basically tells Scraper what should be placed before `@href`
 
 
-> ## Challenge:
+> ## Challenge: Applying `concat` function
 >
 >
 > Let's say you want to add automatically include `Dr.` before all faculty names, how would you do that using the `concat()` XPath function
@@ -267,7 +267,7 @@ Note that the XPath expression basically tells Scraper what should be placed bef
 {: .challenge}
 
  
- ### Other free Chrome extensions to scrape data from websites:
+#### Other free Chrome extensions to scrape data from websites:
  
 [Web Scraper](https://chrome.google.com/webstore/detail/web-scraper/jnhgnonknehpejjnehehllkliplmbmhn?hl=en)
 
@@ -279,9 +279,4 @@ Note that the XPath expression basically tells Scraper what should be placed bef
 
 
 [Grabbly](https://chrome.google.com/webstore/detail/grabbly/acmmehmidcnncgbigblfkgmbmeijgefl?hl=en)
-
-[a]There is an option to export to Google Docs but I have note set up this yet
-
-
-OAuth2 request failed: Service responded with error: 'Service has been disabled for this account.'
 
