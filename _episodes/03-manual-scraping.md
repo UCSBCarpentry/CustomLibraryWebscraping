@@ -213,7 +213,7 @@ You should get this path:
 > > ~~~
 > > ./div[4]/div[1]/div/a (Email)
 > > ./div[2]/div[2]/div/d (Position)
-> > ./div[4]/div[3]/div/d (Office)>
+> > ./div[4]/div[3]/div/d (Office)
 > > ~~~
 > {: .solution}
 {: .challenge}
