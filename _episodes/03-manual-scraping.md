@@ -47,7 +47,7 @@ In fact, we can try out that query using the technique that we learned in the pr
 >
 > **Windows/Linux:** (Control+Shift+J). 
 >
->Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a cell is a table
+>Remember: ```<tr>``` defines a row in a table and ```<td>``` defines a data cell in a table
 {: .callout}
 
 ~~~
