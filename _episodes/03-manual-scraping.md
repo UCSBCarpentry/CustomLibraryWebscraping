@@ -124,7 +124,7 @@ Let's inspect the link to identify on the developer's console the exact path for
 > {: .solution}
 {: .challenge} 
 
-## Let's scrape a different site
+## Let's scrape a different website
 
 
 Now let's turn to the Jewish Studies faculty webpage [www.jewishstudies.ucsb.edu/people](https://www.jewishstudies.ucsb.edu/people) for practicing XPath queries a little bit more.
@@ -151,7 +151,7 @@ Select one of the Faculty names > right-click > inspect. It will open the develo
 
 ![Jewish Studies with developer window]({{ page.root }}/fig/Image7.png)
 
-In the developer tools window select the  html element containing the faculty name, right-click, then choose Copy Xpath. 
+In the developer tools window select the html element containing the faculty name, right-click, then choose Copy Xpath. 
  
 You should get this path: 
 
@@ -279,4 +279,3 @@ Note that the XPath expression basically tells Scraper what should be placed bef
 
 
 [Grabbly](https://chrome.google.com/webstore/detail/grabbly/acmmehmidcnncgbigblfkgmbmeijgefl?hl=en)
-
