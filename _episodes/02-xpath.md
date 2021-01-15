@@ -431,7 +431,9 @@ Array [ <blockquote.challenge>, <blockquote.challenge>, <blockquote.challenge>, 
 
 # Advanced XPath syntax
 
-FIXME: All the content below is from the original XPath lesson. Adapt content to use current example.
+There's much more to XPath.  We won't cover this material in the
+workshop, but list it here for additional reading.  An XPath
+cheatsheet is linked at the bottom of this page.
 
 ## Operators
 
@@ -591,18 +593,8 @@ $x("//h2[@id='navigating-through-the-html-node-tree-using-xpath']/following-sibl
 ~~~
 {: .source}
 
-
-# Additions
-
-FIXME: add more XPath functions such as concat() and normalize-space().
-FIXME: mention [XPath Checker for Firefox](https://addons.mozilla.org/en-US/firefox/addon/xpath-checker/)
-FIXME: Firefox sometime cleans up the HTML of a page before displaying it, meaning that the DOM tree
-we can access through the console might not reflect the actual source code. `<tbody>` elements are
-typically not reliable.
-The [Scrapy documentation](https://doc.scrapy.org/en/latest/topics/firefox.html#caveats-with-inspecting-the-live-browser-dom)
-has more on the topic. 
-
 # References
 
 * [W3Schools: JavaScript HTML DOM Navigation](http://www.w3schools.com/js/js_htmldom_navigation.asp)
-* [XPath Cheatsheet](/library-webscraping/extras/xpath-cheatsheet.md.pdf)
+* [XPath Cheatsheet](https://devhints.io/xpath)
+* [Another XPath Cheatsheet](http://labs.timtom.ch/library-webscraping/extras/xpath-cheatsheet.md.pdf)

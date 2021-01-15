@@ -18,9 +18,11 @@ keypoints:
 
 # Using the Scraper Chrome extension
 
-Now we are finally ready to do some web scraping. For this lesson, we will be using two UCSB department webpages: East Asian Languages and Cultural Studies and Jewish Studies. We are interested in scraping contact information from faculty within these departments with the help of Xpath and Scraper. To do so, we will use the Scraper extension in the Chrome browser (refer to the [Setup](setup/) section for help installing these tools).
-First, let's focus our attention on the East Asian Languages and Cultural Studies webpage <a href="https://www.eastasian.ucsb.edu/people/faculty/" target="_blank">https://www.eastasian.ucsb.edu/people/faculty/</a> 
+Now we are finally ready to do some web scraping using Scraper Chrome extension. If you haven’t it installed in your machine, please refer to the <a href="https://librarycarpentry.org/lc-webscraping/setup" target="_blank"> Setup instructions</a>.
 
+For this lesson, we will be using two UCSB department webpages: East Asian Languages and Cultural Studies and Jewish Studies. We are interested in scraping contact information from faculty within these departments with the help of Xpath and Scraper. 
+
+First, let's focus our attention on the East Asian Languages and Cultural Studies webpage <a href="https://www.eastasian.ucsb.edu/people/faculty/" target="_blank">https://www.eastasian.ucsb.edu/people/faculty/</a>.  
 We are interested in downloading the list of faculty names and their email addresses.
 ![East Asian Studies website]({{ page.root }}/fig/Image1.png)
 	
@@ -127,7 +129,7 @@ Let's inspect the link to identify on the developer's console the exact path for
 ## Let's scrape a different website
 
 
-Now let's turn to the Jewish Studies webpage <a href="https://www.jewishstudies.ucsb.edu/people" target= "_blank">www.jewishstudies.ucsb.edu/people</a> for practicing XPath queries a little bit more.
+Now let's turn to the Jewish Studies webpage <a target="_blank" href="https://www.jewishstudies.ucsb.edu/people">www.jewishstudies.ucsb.edu/people</a> for practicing XPath queries a little bit more.
 
 Note that the profiles on this webpage are laid out differently from the first example. Here, the information is not displayed in well-defined rows and columns. So, when we scrape the webpage, we should get one row per faculty with only one string of data.
 
